@@ -74,6 +74,7 @@
       h("option", { value: "coop", text: "🤝 Coopératif — victoire/défaite commune" }),
       h("option", { value: "duo", text: "👥 Duo — coopératif, strictement 2 joueurs" })
     );
+    const fLow = h("input", { id: "glow", type: "checkbox" });
     function autoMode() {
       const two = fMin.value === "2" && fMax.value === "2";
       const cur = fMode.value;
@@ -116,6 +117,7 @@
         h("div", null, h("label", { for: "gtags", text: "Tags / catégories (séparés par des virgules)" }), fTags)
       ),
       h("div", null, h("label", { for: "gmode", text: "Type de jeu (catégorie de classement)" }), fMode),
+      h("div", null, h("label", { style: "display:inline-flex;gap:6px;align-items:center;cursor:pointer" }, fLow, " 🏌️ Le plus petit score gagne (golf, fléchettes, etc.)")),
       h("div", { class: "btn-row" }, h("button", {
         text: "Ajouter le jeu",
         onclick: function () {
@@ -131,6 +133,7 @@
             duration: fDuration.value ? parseInt(fDuration.value, 10) : null,
             bestPlayers: fBest.value ? parseInt(fBest.value, 10) : null,
             mode: fMode.value,
+            lowestScoreWins: fLow.checked,
             tags: fTags.value,
             image: fImg.value || null,
           });
@@ -175,7 +178,7 @@
       games.forEach((g) => {
         const count = st.matches.filter((m) => m.gameId === g.id).length;
         t.appendChild(h("tr", null,
-          h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: (g.favorite ? "⭐ " : "") + g.name }), " ", modeBadge(g), g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
+          h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: (g.favorite ? "⭐ " : "") + g.name }), " ", modeBadge(g), g.lowestScoreWins ? h("span", { class: "chip", text: "🏌️ petit score" }) : null, g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
           h("td", null, (g.tags || []).map((tg) => h("span", { class: "chip", text: tg }))),
           h("td", { class: "num" }, h("span", { class: "weight", text: String(g.complexity) })),
           h("td", { class: "num", text: g.duration ? g.duration + " min" : "—" }) ,
