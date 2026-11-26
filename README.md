@@ -16,6 +16,56 @@ python3 server.py
 # puis ouvrir http://127.0.0.1:8787
 ```
 
+## Installer l'app sur un nouvel appareil (step by step)
+
+Le dépôt est public : chacun peut avoir **sa propre copie** de l'app (ses propres données).
+
+### Sur un ordinateur (Windows / macOS / Linux)
+
+1. **Installer Python 3** (si ce n'est pas déjà fait) : https://www.python.org/downloads/ (cocher « Add Python to PATH » sur Windows). Vérifier : `python3 --version`
+2. **Installer Git** : https://git-scm.com/downloads
+3. Ouvrir un terminal et taper :
+   ```bash
+   git clone https://github.com/Frangan61/Tabletop-Tracker.git
+   cd Tabletop-Tracker
+   python3 server.py
+   ```
+4. Ouvrir le navigateur sur **http://127.0.0.1:8787** → l'app est prête.
+   - Si le port 8787 est occupé : `PORT=9000 python3 server.py` puis http://127.0.0.1:9000
+   - Pour la recherche BGG automatique : `BGG_API_KEY=ta_cle python3 server.py` (sinon saisie manuelle des jeux)
+5. **Optionnel — l'installer comme une app** : dans le navigateur, menu ⋮ → « Installer TableTop Tracker » (Chrome/Edge) → icône sur le bureau.
+6. **Mises à jour** : `cd Tabletop-Tracker && git pull` puis relancer `python3 server.py`.
+
+### Sur un smartphone Android (Termux)
+
+1. Installer **Termux** (F-Droid de préférence, ou Play Store).
+2. Dans Termux :
+   ```bash
+   pkg update && pkg install -y python git
+   git clone https://github.com/Frangan61/Tabletop-Tracker.git
+   cd Tabletop-Tracker
+   python3 server.py
+   ```
+3. Ouvrir **Chrome** sur le téléphone : `http://127.0.0.1:8787`
+4. Menu ⋮ → **« Ajouter à l'écran d'accueil »** → l'app s'installe (icône 🎲, fonctionne hors-ligne).
+5. Laisser Termux tourner en arrière-plan (ne pas le swiper). Mises à jour : `git pull` puis relancer le serveur. Au démarrage du téléphone, option `termux-boot` (voir section « Sur smartphone »).
+
+### Sur iPhone
+
+Pas de serveur local simple sur iOS : utiliser un PC sur le même Wi-Fi :
+```bash
+HOST=0.0.0.0 python3 server.py     # sur le PC
+```
+puis sur l'iPhone, Safari → `http://<IP-du-PC>:8787` (IP du PC : `ipconfig` Windows / `ip addr` Mac/Linux), puis Partager → « Sur l'écran d'accueil ».
+
+### Transférer des données existantes (tes parties)
+
+Les données sont dans le navigateur de chaque appareil. Pour copier ta base chez un ami :
+chez toi ⚙ Paramètres → **Exporter en JSON** → envoie le fichier → chez lui ⚙ Paramètres → **Importer un JSON**.
+(L'export sert aussi de sauvegarde.)
+
+⚠️ Si plusieurs personnes jouent en même temps sur le même Wi-Fi (option `HOST=0.0.0.0`), chacun écrit dans **son propre** navigateur : une seule personne enregistre les parties, puis partage le JSON export.
+
 Le serveur n'écoute que sur `127.0.0.1` (votre machine uniquement).
 Le port se change avec la variable d'environnement `PORT`.
 
