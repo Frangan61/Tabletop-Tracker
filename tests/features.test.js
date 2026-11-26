@@ -10,7 +10,7 @@ globalThis.__tttMockStorage = {
   removeItem: (k) => { delete mem[k]; },
 };
 globalThis.TTT = {};
-require("../static/js/scoring.js");
+const scoring = require("../static/js/scoring.js");
 const store = require("../static/js/store.js");
 const stats = require("../static/js/stats.js");
 
@@ -58,4 +58,34 @@ for (const mm of store.load().matches) for (const e of mm.entries) all.push({ sc
 all.sort((a, b) => b.score - a.score);
 assert.deepStrictEqual(all.slice(0, 3).map((x) => x.score), [13, 11, 9], "top scores desc");
 
-console.log("features.test.js : OK (hash mdp, resetMatches, comparePlayers, top scores)");
+// --- leaderboard : mode "podium" (rang seul x poids, sans perf) vs "full" ---
+// matchs : 01-03 a=11(r1,perf0) b=7(r2,perf0) ; 01-04 b=13(r1,perf10) a=9(r2,perf5) ; poids 2.3
+const st2 = store.load();
+const lbFull = scoring.leaderboard(st2, null, "full");
+const lbPodium = scoring.leaderboard(st2, null, "podium");
+const fA = lbFull.find((r) => r.playerId === p1.id).points;
+const fB = lbFull.find((r) => r.playerId === p2.id).points;
+assert.strictEqual(fA, 50.6, "full Alice = 23 + 27.6");
+assert.strictEqual(fB, 62.1, "full Bob = 16.1 + 46");
+const dA = lbPodium.find((r) => r.playerId === p1.id).points;
+const dB = lbPodium.find((r) => r.playerId === p2.id).points;
+assert.strictEqual(dA, 39.1, "podium Alice = (10+7)*2.3");
+assert.strictEqual(dB, 39.1, "podium Bob = (7+10)*2.3 -> egalite parfaite");
+assert.notStrictEqual(fA, dA, "les deux modes different bien quand perf > 0");
+
+// --- headToHead ---
+const duel = stats.headToHead(st2, p1.id, p2.id, null);
+assert.strictEqual(duel.total, 2);
+assert.strictEqual(duel.winsA, 1);
+assert.strictEqual(duel.winsB, 1);
+assert.strictEqual(duel.ties, 0);
+assert.strictEqual(duel.avgScoreA, 10, "(11+9)/2");
+assert.strictEqual(duel.avgScoreB, 10, "(7+13)/2");
+assert.strictEqual(duel.ptsA, 50.6);
+assert.strictEqual(duel.ptsB, 62.1);
+assert.strictEqual(duel.last, "2025-01-04");
+const duelFiltered = stats.headToHead(st2, p1.id, p2.id, (m) => m.date >= "2025-01-04");
+assert.strictEqual(duelFiltered.total, 1, "filtre de periode sur le duel");
+assert.strictEqual(duelFiltered.winsB, 1);
+
+console.log("features.test.js : OK (hash mdp, resetMatches, comparePlayers, podium, face-a-face, top scores)");

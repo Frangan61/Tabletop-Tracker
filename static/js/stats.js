@@ -97,12 +97,13 @@
     };
   }
 
-  // Comparaison de plusieurs joueurs (avec filtre de période optionnel)
-  function comparePlayers(state, playerIds, filter) {
+  // Comparaison de plusieurs joueurs (avec filtre de période et mode de points optionnels)
+  function comparePlayers(state, playerIds, filter, mode) {
+    const config = state.scoring || root.TTT.scoring.DEFAULT_SCORING;
     return playerIds.map((id) => {
       const player = state.players.find((p) => p.id === id);
       const hist = matchesOf(state, id).filter((h) => !filter || filter(h.match));
-      const board = root.TTT.scoring.leaderboard(state, filter).find((r) => r.playerId === id);
+      const board = root.TTT.scoring.leaderboard(state, filter, mode).find((r) => r.playerId === id);
       const wins = hist.filter((h) => h.entry.rank === 1).length;
       const podiums = hist.filter((h) => h.entry.rank <= 3).length;
       const avgRank = hist.length ? Math.round((hist.reduce((s, h) => s + h.entry.rank, 0) / hist.length) * 100) / 100 : null;
@@ -110,7 +111,7 @@
       const streak = streaks(hist);
       let cum = 0;
       const evolution = hist.slice().reverse().map((h) => {
-        cum = Math.round((cum + h.entry.points) * 10) / 10;
+        cum = Math.round((cum + root.TTT.scoring.entryPoints(state, h.match, h.entry, config, mode || "full")) * 10) / 10;
         return { date: h.match.date, y: cum };
       });
       return {
@@ -128,7 +129,43 @@
     });
   }
 
-  const api = { matchesOf, playerStats, comparePlayers };
+  // Face-à-face entre deux joueurs : uniquement les parties où ils sont tous les deux
+  function headToHead(state, idA, idB, filter) {
+    const common = [];
+    for (const m of state.matches) {
+      if (filter && !filter(m)) continue;
+      const a = m.entries.find((e) => e.playerId === idA);
+      const b = m.entries.find((e) => e.playerId === idB);
+      if (a && b) common.push({ match: m, a, b, game: state.games.find((g) => g.id === m.gameId) });
+    }
+    common.sort((x, y) => (x.match.date < y.match.date ? -1 : 1));
+    let winsA = 0, winsB = 0, ties = 0, sumA = 0, sumB = 0, ptsA = 0, ptsB = 0;
+    for (const c of common) {
+      if (c.a.rank < c.b.rank) winsA++;
+      else if (c.b.rank < c.a.rank) winsB++;
+      else ties++;
+      sumA += c.a.score;
+      sumB += c.b.score;
+      ptsA += c.a.points || 0;
+      ptsB += c.b.points || 0;
+    }
+    const n = common.length;
+    const r1 = (x) => Math.round(x * 10) / 10;
+    return {
+      total: n,
+      winsA,
+      winsB,
+      ties,
+      avgScoreA: n ? r1(sumA / n) : null,
+      avgScoreB: n ? r1(sumB / n) : null,
+      ptsA: r1(ptsA),
+      ptsB: r1(ptsB),
+      last: n ? common[n - 1].match.date : null,
+      matches: common,
+    };
+  }
+
+  const api = { matchesOf, playerStats, comparePlayers, headToHead };
   root.TTT = root.TTT || {};
   root.TTT.stats = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;

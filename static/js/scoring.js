@@ -89,7 +89,21 @@
     return round1(total);
   }
 
-  function leaderboard(state, filter) {
+  // Points d'une entrée selon le mode d'affichage :
+  // "full" = points stockés (rang + perf) × poids ; "podium" = rang seul × poids (sans bonus de score)
+  function entryPoints(state, match, entry, config, mode) {
+    const game = state.games.find((g) => g.id === match.gameId) || { complexity: 1 };
+    const weight = weightFor(game, config);
+    if (mode === "podium") {
+      const base = typeof entry.rankPoints === "number" ? entry.rankPoints : rankPointsFor(entry.rank, config);
+      return round1(base * weight);
+    }
+    return entry.points || 0;
+  }
+
+  function leaderboard(state, filter, mode) {
+    mode = mode || "full";
+    const config = state.scoring || DEFAULT_SCORING;
     const rows = state.players.map((p) => {
       let points = 0;
       let matches = 0;
@@ -99,7 +113,7 @@
         if (filter && !filter(m)) continue;
         for (const e of m.entries) {
           if (e.playerId === p.id) {
-            points += e.points || 0;
+            points += entryPoints(state, m, e, config, mode);
             matches += 1;
             if (e.rank === 1) wins += 1;
             if (e.rank <= 3) podiums += 1;
@@ -132,6 +146,7 @@
     weightFor,
     historyScores,
     perfPoints,
+    entryPoints,
     computeMatchResults,
     playerTotalPoints,
     leaderboard,

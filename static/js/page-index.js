@@ -25,6 +25,11 @@
         h("option", { value: "90", text: "3 derniers mois" }),
         h("option", { value: "365", text: "12 derniers mois" })
       ),
+      h("label", { for: "mode", text: "Formule :", style: "margin:0" }),
+      h("select", { id: "mode" },
+        h("option", { value: "full", text: "Complète (rang + perf score × poids BGG)" }),
+        h("option", { value: "podium", text: "Podium seul (rang × poids BGG, sans bonus de score)" })
+      ),
       h("button", { class: "secondary", text: "Tout cocher", onclick: () => { s.players.forEach((p) => selected.add(p.id)); renderBoard(); } }),
       h("button", { class: "secondary", text: "Tout décocher", onclick: () => { selected.clear(); renderBoard(); } }),
       h("span", { id: "sel-count", class: "muted small" })
@@ -42,10 +47,15 @@
       return v === "all" || isNaN(days) ? null : daysAgoFilter(days);
     }
 
+    function currentMode() {
+      return toolbar.querySelector("#mode").value === "podium" ? "podium" : "full";
+    }
+
     function renderBoard() {
       clear(panel);
       const filter = currentFilter();
-      const rows = TTT.scoring.leaderboard(s, filter);
+      const mode = currentMode();
+      const rows = TTT.scoring.leaderboard(s, filter, mode);
       toolbar.querySelector("#sel-count").textContent = selected.size ? selected.size + " joueur(s) sélectionné(s) — comparatif ci-dessous" : "Coche des joueurs pour les comparer";
       if (!rows.length || rows.every((r) => r.matches === 0)) {
         panel.appendChild(h("p", { class: "muted", text: "Aucune partie sur cette période." }));
@@ -77,14 +87,14 @@
         });
         panel.appendChild(table);
       }
-      renderCompare(filter);
+      renderCompare(filter, mode);
     }
 
-    function renderCompare(filter) {
+    function renderCompare(filter, mode) {
       clear(comparePanel);
       const ids = s.players.filter((p) => selected.has(p.id)).map((p) => p.id);
       if (ids.length < 2) return;
-      const data = TTT.stats.comparePlayers(s, ids, filter);
+      const data = TTT.stats.comparePlayers(s, ids, filter, mode);
       const maxPts = Math.max.apply(null, data.map((d) => d.points).concat([1]));
 
       comparePanel.appendChild(h("h2", { text: "⚖️ Comparaison (" + ids.length + " joueurs)" }));
@@ -125,9 +135,55 @@
         requestAnimationFrame(draw);
         window.addEventListener("resize", draw);
       }
+
+      if (ids.length === 2) renderH2H(comparePanel, ids[0], ids[1], filter);
+    }
+
+    function renderH2H(container, idA, idB, filter) {
+      const a = s.players.find((p) => p.id === idA);
+      const b = s.players.find((p) => p.id === idB);
+      const duel = TTT.stats.headToHead(s, idA, idB, filter);
+      container.appendChild(h("h2", { text: "⚔️ Face-à-face : " + a.name + " vs " + b.name }));
+      if (!duel.total) {
+        container.appendChild(h("p", { class: "muted", text: "Ces deux joueurs ne se sont jamais affrontés." }));
+        return;
+      }
+      const cards = h("div", { class: "grid cols-2" },
+        h("div", { class: "stat-card" },
+          h("div", { class: "label", text: a.name + " gagne" }),
+          h("div", { class: "value", text: duel.winsA + " / " + duel.total }, h("span", { class: "sub", text: "sur " + duel.total + " partie(s) communes" }))
+        ),
+        h("div", { class: "stat-card" },
+          h("div", { class: "label", text: b.name + " gagne" }),
+          h("div", { class: "value", text: duel.winsB + " / " + duel.total }, h("span", { class: "sub", text: duel.ties ? duel.ties + " match nul" + (duel.ties > 1 ? "s" : "") : "" }))
+        ),
+        h("div", { class: "stat-card" },
+          h("div", { class: "label", text: "Score brut moyen" }),
+          h("div", { class: "value", style: "font-size:19px", text: a.name + " " + duel.avgScoreA + " — " + b.name + " " + duel.avgScoreB })
+        ),
+        h("div", { class: "stat-card" },
+          h("div", { class: "label", text: "Points gagnés en duel" }),
+          h("div", { class: "value", style: "font-size:19px", text: a.name + " " + fmt1(duel.ptsA) + " — " + b.name + " " + fmt1(duel.ptsB) }, h("div", { class: "sub", text: "dernier duel le " + fmtDate(duel.last) }))
+        )
+      );
+      container.appendChild(cards);
+      const t = h("table", null,
+        h("tr", null, h("th", { text: "Date" }), h("th", { text: "Jeu" }), h("th", { class: "num", text: a.name }), h("th", { class: "num", text: b.name }))
+      );
+      duel.matches.slice().reverse().forEach((c) => {
+        const winA = c.a.rank < c.b.rank;
+        t.appendChild(h("tr", null,
+          h("td", { text: fmtDate(c.match.date) }),
+          h("td", null, c.game ? gameLink(s, c.game.id) : "?"),
+          h("td", { class: "num", text: (winA ? "👑 " : "") + c.a.score + " (rang " + c.a.rank + ")" }),
+          h("td", { class: "num", text: (!winA && c.a.rank !== c.b.rank ? "👑 " : "") + c.b.score + " (rang " + c.b.rank + ")" })
+        ));
+      });
+      container.appendChild(h("div", { class: "panel" }, t));
     }
 
     toolbar.querySelector("#period").addEventListener("change", renderBoard);
+    toolbar.querySelector("#mode").addEventListener("change", renderBoard);
     renderBoard();
 
     main.appendChild(h("h2", { text: "Dernières parties" }));
