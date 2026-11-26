@@ -15,8 +15,16 @@
       else el.setAttribute(k, v === true ? "" : v);
     }
     for (let i = 2; i < arguments.length; i++) {
-      const c = arguments[i];
+      let c = arguments[i];
       if (c == null || c === false) continue;
+      if (Array.isArray(c)) c = c.flat(Infinity); // autorise h("ul", null, items.map(...))
+      if (Array.isArray(c)) {
+        for (const cc of c) {
+          if (cc == null || cc === false) continue;
+          el.appendChild(typeof cc === "string" ? document.createTextNode(cc) : cc);
+        }
+        continue;
+      }
       el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
     }
     return el;

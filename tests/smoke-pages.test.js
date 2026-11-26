@@ -15,7 +15,7 @@ function makeEl(tag) {
     classList: { add() {}, remove() {}, contains() { return false; } },
     setAttribute(k, v) { this.attrs[k] = v; },
     getAttribute(k) { return this.attrs[k]; },
-    appendChild(c) { this.children.push(c); return c; },
+    appendChild(c) { if (Array.isArray(c) || (c && typeof c === "object" && !c.tag && !("text" in c))) throw new TypeError("appendChild: not a Node (comme un vrai navigateur)"); this.children.push(c); return c; },
     removeChild(c) { this.children = this.children.filter((x) => x !== c); },
     addEventListener() {},
     remove() {},
@@ -59,7 +59,7 @@ global.localStorage = {
 global.document = {
   getElementById: () => makeEl("div"),
   createElement: (t) => makeEl(t),
-  createTextNode: (t) => ({ text: String(t) }),
+  createTextNode: (t) => ({ text: String(t), tag: "#text" }),
   querySelectorAll: () => [],
   body: makeEl("body"),
 };
