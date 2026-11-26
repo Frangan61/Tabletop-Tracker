@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerLink, playerDot, gameLink } = TTT.dom;
+  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerLink, playerDot, gameLink, fmtEntryResult } = TTT.dom;
   const { state, daysAgoFilter, boot } = TTT.util;
 
   boot("index", function (main) {
@@ -94,10 +94,12 @@
       clear(comparePanel);
       const ids = s.players.filter((p) => selected.has(p.id)).map((p) => p.id);
       if (ids.length < 2) return;
-      const data = TTT.stats.comparePlayers(s, ids, filter, mode);
+      // Comparaison équitable : uniquement les parties où TOUS les joueurs cochés étaient présents
+      const data = TTT.stats.comparePlayers(s, ids, filter, mode, true);
       const maxPts = Math.max.apply(null, data.map((d) => d.points).concat([1]));
 
       comparePanel.appendChild(h("h2", { text: "⚖️ Comparaison (" + ids.length + " joueurs)" }));
+      comparePanel.appendChild(h("p", { class: "muted small", text: "Base équitable : seules les " + (data[0] ? data[0].matches : 0) + " partie(s) où tous les joueurs cochés étaient présents ensemble sont comptées (les parties avec d'autres joueurs en plus comptent aussi)." }));
 
       const bars = h("div", { class: "panel" });
       data.forEach((d) => {
@@ -199,7 +201,7 @@
           h("ul", null, entries.map((e) => {
             return h("li", null,
               h("span", null, rankBadge(e.rank), " ", playerLink(s, e.playerId)),
-              h("span", null, h("span", { class: "muted", text: "score " + e.score + " · " }), h("b", { text: fmt1(e.points) + " pts" }), e.isRecord ? h("span", { class: "badge-record", text: " ★ record" }) : null)
+              h("span", null, h("span", { class: "muted", text: fmtEntryResult(m, e) + " · " }), h("b", { text: fmt1(e.points) + " pts" }), e.isRecord ? h("span", { class: "badge-record", text: " ★ record" }) : null)
             );
           }))
         );

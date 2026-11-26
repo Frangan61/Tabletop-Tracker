@@ -62,6 +62,7 @@
     const fMax = h("input", { id: "gmax", type: "number", min: "1", max: "20", placeholder: "Max" });
     const fDuration = h("input", { id: "gduration", type: "number", min: "5", max: "600", step: "5", placeholder: "Durée moy. (min)" });
     const fTags = h("input", { id: "gtags", type: "text", placeholder: "Tags séparés par des virgules (ex: Stratégie, Cartes, Ambiance)" });
+    const fCoop = h("input", { id: "gcoop", type: "checkbox" });
 
     function fillForm(t) {
       fName.value = t.name || "";
@@ -73,6 +74,7 @@
       fDuration.value = t.playingtime || "";
       const tags = [...(t.categories || []), ...(t.mechanics || [])];
       fTags.value = tags.slice(0, 12).join(", ");
+      fCoop.checked = (t.categories || []).some((c) => /cooperative/i.test(c));
       if (t.image) fImg.value = t.image;
     }
 
@@ -90,6 +92,7 @@
         h("div", null, h("label", { for: "gduration", text: "Durée moyenne (minutes)" }), fDuration),
         h("div", null, h("label", { for: "gtags", text: "Tags / catégories (séparés par des virgules)" }), fTags)
       ),
+      h("div", null, h("label", { class: "tag-toggle", style: "display:inline-flex" }, fCoop, " 🤝 Jeu coopératif (victoire/défaite commune, pas de score individuel)" )),
       h("div", { class: "btn-row" }, h("button", {
         text: "Ajouter le jeu",
         onclick: function () {
@@ -103,6 +106,7 @@
             minPlayers: fMin.value ? parseInt(fMin.value, 10) : null,
             maxPlayers: fMax.value ? parseInt(fMax.value, 10) : null,
             duration: fDuration.value ? parseInt(fDuration.value, 10) : null,
+            coop: fCoop.checked,
             tags: fTags.value,
             image: fImg.value || null,
           });
@@ -129,7 +133,7 @@
       st.games.forEach((g) => {
         const count = st.matches.filter((m) => m.gameId === g.id).length;
         t.appendChild(h("tr", null,
-          h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: g.name }), g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
+          h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: g.name }), g.coop ? " 🤝" : "", g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
           h("td", null, (g.tags || []).map((tg) => h("span", { class: "chip", text: tg }))),
           h("td", { class: "num" }, h("span", { class: "weight", text: String(g.complexity) })),
           h("td", { class: "num", text: g.duration ? g.duration + " min" : "—" }),

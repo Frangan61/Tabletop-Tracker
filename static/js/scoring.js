@@ -59,12 +59,14 @@
     const game = state.games.find((g) => g.id === input.gameId) || { complexity: 1 };
     const weight = weightFor(game, config);
     const scores = input.entries.map((e) => e.score);
-    const ranks = computeRanks(scores);
+    // Jeu coopératif : victoire -> rang 1 pour tous ; défaite -> dernier rang ex-aequo pour tous
+    const ranks = game.coop && input.coopResult === "loss" ? scores.map(() => scores.length) : computeRanks(scores);
     const history = historyScores(state, input.gameId, input.date);
     const maxHist = history.length ? Math.max.apply(null, history) : null;
     return input.entries.map((e, i) => {
       const base = rankPointsFor(ranks[i], config);
-      const perf = perfPoints(history, e.score, config);
+      // Jeu coopératif : pas de score individuel -> pas de perf dynamique
+      const perf = game.coop ? 0 : perfPoints(history, e.score, config);
       const isRecord = maxHist !== null && e.score > maxHist;
       return {
         playerId: e.playerId,

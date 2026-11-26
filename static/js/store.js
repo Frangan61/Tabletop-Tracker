@@ -96,6 +96,7 @@
       minPlayers: data.minPlayers || null,
       maxPlayers: data.maxPlayers || null,
       duration: typeof data.duration === "number" && data.duration > 0 ? Math.round(data.duration) : null,
+      coop: !!data.coop,
       tags: normalizeTags(data.tags || []),
       image: data.image || null,
       createdAt: new Date().toISOString(),
@@ -122,6 +123,8 @@
       date: input.date || new Date().toISOString().slice(0, 10),
       notes: input.notes || "",
       entries,
+      coopResult: input.coopResult || null, // "win" | "loss" pour les jeux coopératifs
+      teamScore: typeof input.teamScore === "number" ? input.teamScore : null,
       createdAt: new Date().toISOString(),
     };
     state.matches.push(match);

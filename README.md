@@ -117,10 +117,16 @@ nombre de joueurs, temps disponible, tags et texte libre — avec un bouton
   meilleurs scores tous joueurs confondus** et historique des parties
 - **Classement** : deux formules d'affichage au choix — **complète** (rang + perf score × poids
   BGG) ou **podium seul** (rang × poids BGG, sans le bonus de score de partie) ; filtrable par
-  période. Coches les joueurs pour les **comparer** (barres de points, tableau de stats :
-  rang moyen, meilleur score, série en cours… courbes d'évolution superposées) ; à **2 joueurs
+  période. Coches les joueurs pour les **comparer** : la comparaison ne porte que sur les
+  **parties communes à tous les joueurs cochés** (équitable — les parties avec d'autres joueurs
+  en plus comptent tant que tous les cochés y sont) ; barres de points, tableau de stats
+  (rang moyen, meilleur score, série en cours…), courbes d'évolution superposées ; à **2 joueurs
   cochés**, un panneau **⚔️ face-à-face** détaille leurs duels (victoires, scores moyens, points
   gagnés, historique des confrontations)
+- **Jeux coopératifs** : case « 🤝 coopératif » (auto-détectée via la catégorie BGG
+  « Cooperative Game »). À l'enregistrement : résultat commun **Victoire/Défaite** (+ score
+  d'équipe optionnel pour le top 10) au lieu des scores individuels → victoire = 1er pour tous,
+  défaite = dernier ex-aequo, **perf désactivée** ; top 10 du jeu = meilleurs scores d'équipe
 - **Nouvelle partie** : sélection du jeu, date, participants + scores bruts, aperçu en direct
   du rang et des points calculés avant enregistrement
 - **🏆 Tournoi** : choisis le jeu et les participants, le nombre de poules et les qualifiés par

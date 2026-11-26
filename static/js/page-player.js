@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, gameLink, playerDot } = TTT.dom;
+  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, gameLink, playerDot, fmtEntryResult } = TTT.dom;
   const { state, boot } = TTT.util;
 
   boot("players", function (main) {
@@ -99,7 +99,7 @@
         t.appendChild(h("tr", null,
           h("td", { text: fmtDate(hrow.match.date) }),
           h("td", null, gameLink(s, hrow.match.gameId)),
-          h("td", { class: "num", text: String(hrow.entry.score) }),
+          h("td", { class: "num", text: hrow.match.coopResult ? (hrow.match.coopResult === "win" ? "🏆" : "💀") + (hrow.match.teamScore != null ? " " + hrow.match.teamScore : "") : String(hrow.entry.score) }),
           h("td", null, rankBadge(hrow.entry.rank)),
           h("td", { class: "num", text: fmt1(hrow.entry.points) + (hrow.entry.isRecord ? " ★" : "") })
         ));

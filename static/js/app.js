@@ -41,6 +41,13 @@
     return Math.round((x || 0) * 100) + " %";
   }
 
+  function fmtEntryResult(m, e) {
+    if (m && m.coopResult) {
+      return (m.coopResult === "win" ? "🏆 victoire" : "💀 défaite") + (m.teamScore != null ? " · score équipe " + m.teamScore : "");
+    }
+    return "score " + (e ? e.score : "?");
+  }
+
   function rankBadge(rank) {
     const medals = { 1: "🥇", 2: "🥈", 3: "🥉" };
     return h("span", { class: "rank r" + rank, text: (medals[rank] || "") + " " + rank + (rank === 1 ? "er" : "e") });
@@ -132,6 +139,6 @@
   }
 
   root.TTT = root.TTT || {};
-  root.TTT.dom = { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerDot, playerLink, gameLink, download };
+  root.TTT.dom = { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerDot, playerLink, gameLink, download, fmtEntryResult };
   root.TTT.util = { daysAgoFilter, initNav, state, boot, sha256Hex };
 })(typeof window !== "undefined" ? window : globalThis);

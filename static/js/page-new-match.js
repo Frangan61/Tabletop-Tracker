@@ -18,10 +18,11 @@
 
     const gameSel = h("select", { id: "m-game" },
       h("option", { value: "", text: "— Choisir un jeu —" }),
-      s.games.map((g) => h("option", { value: g.id, text: g.name + " (poids " + g.complexity + (g.duration ? ", " + g.duration + " min" : "") + ")" }))
+      s.games.map((g) => h("option", { value: g.id, text: g.name + (g.coop ? " 🤝" : "") + " (poids " + g.complexity + (g.duration ? ", " + g.duration + " min" : "") + ")" }))
     );
     const preselect = new URLSearchParams(location.search).get("game");
     if (preselect && s.games.some((g) => g.id === preselect)) gameSel.value = preselect;
+
     const dateIn = h("input", { id: "m-date", type: "date", value: new Date().toISOString().slice(0, 10) });
     const notesIn = h("input", { id: "m-notes", type: "text", placeholder: "Notes éventuelles (facultatif)" });
 
@@ -29,6 +30,25 @@
       s.players.map((p) => h("option", { value: p.id, text: p.name }))
     );
     const scoreIn = h("input", { id: "m-score", type: "number", step: "any", placeholder: "Score" });
+    const scoreLabel = h("label", { for: "m-score", text: "Score brut" });
+    const scoreBox = h("div", null, scoreLabel, scoreIn);
+
+    // Mode coopératif : résultat commun au lieu des scores individuels
+    const coopResultSel = h("select", { id: "m-coopresult" },
+      h("option", { value: "", text: "— Résultat de la partie —" }),
+      h("option", { value: "win", text: "🏆 Victoire (tout le monde 1er)" }),
+      h("option", { value: "loss", text: "💀 Défaite (tout le monde dernier)" })
+    );
+    const teamScoreIn = h("input", { id: "m-teamscore", type: "number", step: "any", placeholder: "Score d'équipe (optionnel)" });
+    const coopBox = h("div", { class: "grid cols-2", style: "display:none" },
+      h("div", null, h("label", { for: "m-coopresult", text: "Résultat (commun à tous)" }), coopResultSel),
+      h("div", null, h("label", { for: "m-teamscore", text: "Score d'équipe (optionnel, pour le top 10)" }), teamScoreIn)
+    );
+
+    const isCoop = () => {
+      const g = s.games.find((x) => x.id === gameSel.value);
+      return !!(g && g.coop);
+    };
 
     const participants = [];
     const previewBody = h("tbody");
@@ -38,12 +58,8 @@
     );
     const previewPanel = h("div", { class: "panel" }, h("h2", { style: "margin-top:0", text: "Participants & points calculés" }), previewTable);
 
-    function usedIds() {
-      return participants.map((p) => p.playerId);
-    }
-
     function refreshPlayerOptions() {
-      const used = new Set(usedIds());
+      const used = new Set(participants.map((p) => p.playerId));
       clear(playerSel);
       s.players.forEach((p) => {
         if (used.has(p.id)) return;
@@ -52,21 +68,35 @@
       if (!playerSel.options.length) playerSel.appendChild(h("option", { value: "", text: "— tous les joueurs sont ajoutés —" }));
     }
 
+    function currentEntries() {
+      if (isCoop()) {
+        const win = coopResultSel.value === "win";
+        return participants.map((p) => ({ playerId: p.playerId, score: coopResultSel.value ? (win ? 1 : 0) : 0 }));
+      }
+      return participants.map((p) => ({ playerId: p.playerId, score: p.score }));
+    }
+
+    function canSave() {
+      if (!gameSel.value || participants.length < 2) return false;
+      if (isCoop()) return !!coopResultSel.value;
+      return participants.every((p) => typeof p.score === "number");
+    }
+
     function renderPreview() {
       clear(previewBody);
       participants.forEach((p, i) => {
+        const pl = s.players.find((x) => x.id === p.playerId) || {};
         previewBody.appendChild(h("tr", null,
-          h("td", null, playerDot(s.players.find((x) => x.id === p.playerId)), " " + (s.players.find((x) => x.id === p.playerId) || {}).name),
-          h("td", { class: "num", text: String(p.score) }),
+          h("td", null, playerDot(pl), " " + pl.name),
+          h("td", { class: "num", text: isCoop() ? (coopResultSel.value === "win" ? "🏆" : coopResultSel.value === "loss" ? "💀" : "…") : String(p.score) }),
           h("td", { class: "muted", text: "…" }),
           h("td", { class: "num", text: "…" }),
           h("td", null, h("button", { class: "secondary", text: "Retirer", onclick: function () { participants.splice(i, 1); refresh(); } }))
         ));
       });
-      const gameId = gameSel.value;
-      if (gameId && participants.length >= 2 && participants.every((p) => typeof p.score === "number")) {
+      if (gameSel.value && participants.length >= 2 && canSave()) {
         const st = state();
-        const results = TTT.scoring.computeMatchResults(st, { gameId, date: dateIn.value, entries: participants });
+        const results = TTT.scoring.computeMatchResults(st, { gameId: gameSel.value, date: dateIn.value, entries: currentEntries() });
         results.forEach((r, i) => {
           const row = previewBody.children[i];
           row.children[2].textContent = "";
@@ -75,11 +105,14 @@
           row.children[3].className = "num" + (r.isRecord ? " badge-record" : "");
         });
       }
-      saveBtn.disabled = !(gameId && participants.length >= 2 && participants.every((p) => typeof p.score === "number"));
+      saveBtn.disabled = !canSave();
     }
 
     function refresh() {
       refreshPlayerOptions();
+      const coop = isCoop();
+      scoreBox.style.display = coop ? "none" : "";
+      coopBox.style.display = coop ? "" : "none";
       renderPreview();
     }
 
@@ -87,13 +120,16 @@
       class: "secondary", text: "Ajouter le joueur",
       onclick: function () {
         const pid = playerSel.value;
-        const raw = scoreIn.value.trim().replace(",", ".");
-        if (!pid) return;
-        const score = parseFloat(raw);
-        if (raw === "" || isNaN(score)) { alert("Saisis un score valide."); return; }
-        if (participants.some((p) => p.playerId === pid)) return;
-        participants.push({ playerId: pid, score });
-        scoreIn.value = "";
+        if (!pid || participants.some((p) => p.playerId === pid)) return;
+        if (isCoop()) {
+          participants.push({ playerId: pid, score: null });
+        } else {
+          const raw = scoreIn.value.trim().replace(",", ".");
+          const score = parseFloat(raw);
+          if (raw === "" || isNaN(score)) { alert("Saisis un score valide."); return; }
+          participants.push({ playerId: pid, score });
+          scoreIn.value = "";
+        }
         refresh();
       }
     });
@@ -103,8 +139,17 @@
       onclick: function () {
         try {
           const st = state();
-          const m = TTT.store.addMatch(st, { gameId: gameSel.value, date: dateIn.value, notes: notesIn.value.trim(), entries: participants });
-          location.href = "index.html?msg=" + encodeURIComponent("Partie enregistrée (" + participants.length + " joueurs).");
+          const coop = isCoop();
+          const teamRaw = teamScoreIn.value.trim().replace(",", ".");
+          TTT.store.addMatch(st, {
+            gameId: gameSel.value,
+            date: dateIn.value,
+            notes: notesIn.value.trim(),
+            entries: currentEntries(),
+            coopResult: coop ? coopResultSel.value : null,
+            teamScore: coop && teamRaw !== "" && !isNaN(parseFloat(teamRaw)) ? parseFloat(teamRaw) : null,
+          });
+          location.href = "index.html?msg=" + encodeURIComponent("Partie enregistrée (" + participants.length + " joueurs" + (coop ? ", coopératif" : "") + ").");
         } catch (e) {
           alert(e.message);
         }
@@ -117,18 +162,20 @@
         h("div", null, h("label", { for: "m-date", text: "Date" }), dateIn),
         h("div", null, h("label", { for: "m-notes", text: "Notes" }), notesIn)
       ),
+      coopBox,
       h("h2", { text: "Ajouter un participant" }),
       h("div", { class: "form-row" },
         h("div", null, h("label", { for: "m-player", text: "Joueur" }), playerSel),
-        h("div", null, h("label", { for: "m-score", text: "Score brut" }), scoreIn),
+        scoreBox,
         h("div", null, addBtn)
       ),
-      h("p", { class: "muted small", text: "Le rang est calculé automatiquement (ex-aequo géré). Points = points de rang × poids BGG du jeu, + bonus si le score bat ton record perso sur ce jeu." })
+      h("p", { class: "muted small", text: "Le rang est calculé automatiquement (ex-aequo géré). Points = (points de rang + perf) × poids BGG du jeu. Jeu coopératif : victoire = 1er pour tous, défaite = dernier pour tous, pas de perf." })
     ));
     main.appendChild(previewPanel);
     main.appendChild(h("div", { class: "btn-row" }, saveBtn, h("a", { class: "btn secondary", href: "index.html", text: "Annuler" })));
 
-    gameSel.addEventListener("change", renderPreview);
+    gameSel.addEventListener("change", refresh);
+    coopResultSel.addEventListener("change", renderPreview);
     dateIn.addEventListener("change", renderPreview);
     refresh();
   });

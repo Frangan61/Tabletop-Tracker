@@ -97,13 +97,27 @@
     };
   }
 
-  // Comparaison de plusieurs joueurs (avec filtre de période et mode de points optionnels)
-  function comparePlayers(state, playerIds, filter, mode) {
+  // Filtre : uniquement les parties où TOUS les joueurs donnés étaient présents
+  // (les parties avec d'autres joueurs en plus comptent quand même).
+  function commonFilter(playerIds) {
+    const set = new Set(playerIds);
+    return (m) => [...set].every((id) => m.entries.some((e) => e.playerId === id));
+  }
+
+  // Comparaison de plusieurs joueurs (filtre de période + mode de points optionnels).
+  // onlyCommon=true : on ne garde que les parties communes aux joueurs sélectionnés,
+  // pour que la comparaison soit équitable (mêmes parties pour tout le monde).
+  function comparePlayers(state, playerIds, filter, mode, onlyCommon) {
     const config = state.scoring || root.TTT.scoring.DEFAULT_SCORING;
+    let f = filter || null;
+    if (onlyCommon && playerIds.length >= 2) {
+      const c = commonFilter(playerIds);
+      f = (m) => (!filter || filter(m)) && c(m);
+    }
     return playerIds.map((id) => {
       const player = state.players.find((p) => p.id === id);
-      const hist = matchesOf(state, id).filter((h) => !filter || filter(h.match));
-      const board = root.TTT.scoring.leaderboard(state, filter, mode).find((r) => r.playerId === id);
+      const hist = matchesOf(state, id).filter((h) => !f || f(h.match));
+      const board = root.TTT.scoring.leaderboard(state, f, mode).find((r) => r.playerId === id);
       const wins = hist.filter((h) => h.entry.rank === 1).length;
       const podiums = hist.filter((h) => h.entry.rank <= 3).length;
       const avgRank = hist.length ? Math.round((hist.reduce((s, h) => s + h.entry.rank, 0) / hist.length) * 100) / 100 : null;
@@ -165,7 +179,7 @@
     };
   }
 
-  const api = { matchesOf, playerStats, comparePlayers, headToHead };
+  const api = { matchesOf, playerStats, comparePlayers, headToHead, commonFilter };
   root.TTT = root.TTT || {};
   root.TTT.stats = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
