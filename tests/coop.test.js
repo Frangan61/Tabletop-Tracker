@@ -105,4 +105,39 @@ assert.strictEqual(ps.coop.losses, 1);
 assert.strictEqual(ps.totalPoints, 105.8, "points affichés = compétitif uniquement");
 assert.strictEqual(ps.globalRank, 1, "rang général calculé sur le compétitif");
 
-console.log("coop.test.js : OK (coop win/loss, perf off, parties communes, catégories versus/coop)");
+// --- 4 modes de jeu : versus / duel / coop / duo ---
+assert.strictEqual(scoring.catOf({ coop: false, duel: false }), "versus");
+assert.strictEqual(scoring.catOf({ coop: false, duel: true }), "duel");
+assert.strictEqual(scoring.catOf({ coop: true, duel: false }), "coop");
+assert.strictEqual(scoring.catOf({ coop: true, duel: true }), "duo");
+assert.strictEqual(scoring.catOf(null), "versus");
+
+const duelGame = store.addGame(st, { name: "7 Wonders Duel", complexity: 2.2, mode: "duel", minPlayers: 2, maxPlayers: 2 });
+const duoGame = store.addGame(st, { name: "Hanabi", complexity: 1.9, mode: "duo", minPlayers: 2, maxPlayers: 2 });
+assert.strictEqual(duelGame.duel, true);
+assert.strictEqual(duelGame.coop, false);
+assert.strictEqual(duoGame.coop, true);
+assert.strictEqual(duoGame.duel, true);
+
+// parties duel (2 joueurs, scores) et duo (coop 2 joueurs)
+store.addMatch(st, { gameId: duelGame.id, date: "2025-01-07", entries: [{ playerId: paul.id, score: 60 }, { playerId: alexis.id, score: 55 }] });
+store.addMatch(st, { gameId: duoGame.id, date: "2025-01-08", coopResult: "win", teamScore: 24, entries: [{ playerId: paul.id, score: 1 }, { playerId: theo.id, score: 1 }] });
+const st2 = store.load();
+
+// chaque catégorie ne voit que ses propres parties
+for (const cat of ["versus", "duel", "coop", "duo"]) {
+  const lb = scoring.leaderboard(st2, null, "full", cat);
+  const row = lb.find((r) => r.playerId === paul.id);
+  if (cat === "versus") assert.strictEqual(row.matches, 3, "versus: 3 parties Catan (pas coop, pas duel)");
+  if (cat === "duel") { assert.strictEqual(row.matches, 1, "duel: 1 partie"); assert.strictEqual(row.wins, 1); }
+  if (cat === "coop") assert.strictEqual(row.matches, 2, "coop: 2 parties (Pandemic win+loss), pas le duo");
+  if (cat === "duo") { assert.strictEqual(row.matches, 1, "duo: 1 partie Hanabi"); assert.strictEqual(row.wins, 1); }
+}
+// playerStats : blocs coop et duel séparés
+const ps2 = stats.playerStats(st2, paul.id);
+assert.strictEqual(ps2.coop.matches, 3, "coop+duo = 3 (2 Pandemic + 1 Hanabi)");
+assert.strictEqual(ps2.duel.matches, 2, "à 2 joueurs = 2 (1 duel + 1 duo)");
+// duel 60 vs 55 -> Paul rang 1 -> 10 x 2.2 = 22 ; total non-coop = versus 105.8 + duel 22 = 127.8
+assert.strictEqual(ps2.totalPoints, 127.8, "points affichés = versus + duel (hors coop/duo)");
+
+console.log("coop.test.js : OK (coop win/loss, perf off, parties communes, 4 modes versus/duel/coop/duo)");

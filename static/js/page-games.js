@@ -8,6 +8,11 @@
 
     const s = state();
 
+    function modeBadge(g) {
+      const c = TTT.scoring.catOf(g);
+      return h("span", { class: "chip", text: c === "duel" ? "🏓 duel 1v1" : c === "coop" ? "🤝 coop" : c === "duo" ? "👥 duo" : "⚔️ compétitif" });
+    }
+
     const searchBox = h("input", { id: "bggq", type: "text", placeholder: "Rechercher sur BoardGameGeek… (ex : Catan, Wingspan)", autocomplete: "off" });
     const results = h("div", { class: "bgg-results" });
     const searchPanel = h("div", { class: "panel" },
@@ -62,7 +67,20 @@
     const fMax = h("input", { id: "gmax", type: "number", min: "1", max: "20", placeholder: "Max" });
     const fDuration = h("input", { id: "gduration", type: "number", min: "5", max: "600", step: "5", placeholder: "Durée moy. (min)" });
     const fTags = h("input", { id: "gtags", type: "text", placeholder: "Tags séparés par des virgules (ex: Stratégie, Cartes, Ambiance)" });
-    const fCoop = h("input", { id: "gcoop", type: "checkbox" });
+    const fMode = h("select", { id: "gmode" },
+      h("option", { value: "versus", text: "⚔️ Compétitif — scores individuels (3+ joueurs ou libre)" }),
+      h("option", { value: "duel", text: "🏓 Duel 1v1 — compétitif, strictement 2 joueurs" }),
+      h("option", { value: "coop", text: "🤝 Coopératif — victoire/défaite commune" }),
+      h("option", { value: "duo", text: "👥 Duo — coopératif, strictement 2 joueurs" })
+    );
+    function autoMode() {
+      const two = fMin.value === "2" && fMax.value === "2";
+      const cur = fMode.value;
+      if (two) fMode.value = cur === "coop" || cur === "duo" ? "duo" : "duel";
+      else if (cur === "duel" || cur === "duo") fMode.value = cur === "duo" ? "coop" : "versus";
+    }
+    fMin.addEventListener("change", autoMode);
+    fMax.addEventListener("change", autoMode);
 
     function fillForm(t) {
       fName.value = t.name || "";
@@ -74,7 +92,9 @@
       fDuration.value = t.playingtime || "";
       const tags = [...(t.categories || []), ...(t.mechanics || [])];
       fTags.value = tags.slice(0, 12).join(", ");
-      fCoop.checked = (t.categories || []).some((c) => /cooperative/i.test(c));
+      const coopBgg = (t.categories || []).some((c) => /cooperative/i.test(c));
+      const two = String(t.minPlayers) === "2" && String(t.maxPlayers) === "2";
+      fMode.value = two ? (coopBgg ? "duo" : "duel") : coopBgg ? "coop" : "versus";
       if (t.image) fImg.value = t.image;
     }
 
@@ -92,7 +112,7 @@
         h("div", null, h("label", { for: "gduration", text: "Durée moyenne (minutes)" }), fDuration),
         h("div", null, h("label", { for: "gtags", text: "Tags / catégories (séparés par des virgules)" }), fTags)
       ),
-      h("div", null, h("label", { class: "tag-toggle", style: "display:inline-flex" }, fCoop, " 🤝 Jeu coopératif (victoire/défaite commune, pas de score individuel)" )),
+      h("div", null, h("label", { for: "gmode", text: "Type de jeu (catégorie de classement)" }), fMode),
       h("div", { class: "btn-row" }, h("button", {
         text: "Ajouter le jeu",
         onclick: function () {
@@ -106,7 +126,7 @@
             minPlayers: fMin.value ? parseInt(fMin.value, 10) : null,
             maxPlayers: fMax.value ? parseInt(fMax.value, 10) : null,
             duration: fDuration.value ? parseInt(fDuration.value, 10) : null,
-            coop: fCoop.checked,
+            mode: fMode.value,
             tags: fTags.value,
             image: fImg.value || null,
           });
@@ -133,7 +153,7 @@
       st.games.forEach((g) => {
         const count = st.matches.filter((m) => m.gameId === g.id).length;
         t.appendChild(h("tr", null,
-          h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: g.name }), g.coop ? " 🤝" : "", g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
+          h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: g.name }), " ", modeBadge(g), g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
           h("td", null, (g.tags || []).map((tg) => h("span", { class: "chip", text: tg }))),
           h("td", { class: "num" }, h("span", { class: "weight", text: String(g.complexity) })),
           h("td", { class: "num", text: g.duration ? g.duration + " min" : "—" }),

@@ -45,10 +45,10 @@
       h("div", null, h("label", { for: "m-teamscore", text: "Score d'équipe (optionnel, pour le top 10)" }), teamScoreIn)
     );
 
-    const isCoop = () => {
-      const g = s.games.find((x) => x.id === gameSel.value);
-      return !!(g && g.coop);
-    };
+    const curGame = () => s.games.find((x) => x.id === gameSel.value);
+    const isCoop = () => !!(curGame() && curGame().coop);
+    const modeOf = () => TTT.scoring.catOf(curGame());
+    const isTwoOnly = () => { const m = modeOf(); return m === "duel" || m === "duo"; };
 
     const participants = [];
     const previewBody = h("tbody");
@@ -78,6 +78,7 @@
 
     function canSave() {
       if (!gameSel.value || participants.length < 2) return false;
+      if (isTwoOnly() && participants.length !== 2) return false;
       if (isCoop()) return !!coopResultSel.value;
       return participants.every((p) => typeof p.score === "number");
     }
@@ -121,6 +122,7 @@
       onclick: function () {
         const pid = playerSel.value;
         if (!pid || participants.some((p) => p.playerId === pid)) return;
+        if (isTwoOnly() && participants.length >= 2) { alert("Jeu à 2 joueurs (duel/duo) : 2 participants exactement."); return; }
         if (isCoop()) {
           participants.push({ playerId: pid, score: null });
         } else {

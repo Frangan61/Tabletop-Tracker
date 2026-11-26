@@ -17,7 +17,7 @@
         h("h1", { style: "margin:0 0 6px", text: g.name }),
         h("div", { class: "muted" },
           h("span", { class: "weight", text: "Poids BGG : " + g.complexity + " / 5" }),
-          "  ·  " + (g.coop ? "🤝 coopératif  ·  " : "") + (g.year ? "Année " + g.year + "  ·  " : "") + (g.duration ? "⏱ " + g.duration + " min  ·  " : "") + (g.minPlayers && g.maxPlayers ? "Joueurs " + g.minPlayers + "–" + g.maxPlayers : ""),
+          "  ·  " + (function () { const c = TTT.scoring.catOf(g); return c === "duel" ? "🏓 duel 1v1  ·  " : c === "coop" ? "🤝 coopératif  ·  " : c === "duo" ? "👥 duo  ·  " : "⚔️ compétitif  ·  "; })() + (g.year ? "Année " + g.year + "  ·  " : "") + (g.duration ? "⏱ " + g.duration + " min  ·  " : "") + (g.minPlayers && g.maxPlayers ? "Joueurs " + g.minPlayers + "–" + g.maxPlayers : ""),
           g.bggId ? "  ·  " + h("a", { href: "https://boardgamegeek.com/boardgame/" + g.bggId, target: "_blank", rel: "noopener", text: "Voir sur BGG ↗" }) : null
         ),
         (g.tags || []).length ? h("div", { class: "tag-cloud" }, g.tags.map((t) => h("span", { class: "chip", text: t }))) : null

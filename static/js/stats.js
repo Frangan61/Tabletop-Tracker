@@ -79,6 +79,15 @@
       losses: coopHist.length - coopWins,
       winRate: coopHist.length ? coopWins / coopHist.length : 0,
     };
+    // Parties à 2 joueurs (duel 1v1 + duo coop)
+    const twoHist = history.filter((h) => { const c = root.TTT.scoring.catOf(h.game); return c === "duel" || c === "duo"; });
+    const twoWins = twoHist.filter((h) => h.entry.rank === 1).length;
+    const duel = {
+      matches: twoHist.length,
+      wins: twoWins,
+      losses: twoHist.length - twoWins,
+      winRate: twoHist.length ? twoWins / twoHist.length : 0,
+    };
 
     const evolution = [];
     let cum = 0;
@@ -97,6 +106,7 @@
       winRate: history.length ? wins / history.length : 0,
       totalPoints: Math.round(vsPoints * 10) / 10,
       coop,
+      duel,
       globalRank: row ? row.rank : null,
       bestScore: bestScore ? { score: bestScore.entry.score, game: bestScore.game, date: bestScore.match.date } : null,
       bestPoints: bestPoints ? { points: bestPoints.entry.points, game: bestPoints.game, date: bestPoints.match.date } : null,

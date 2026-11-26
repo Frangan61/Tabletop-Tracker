@@ -103,13 +103,22 @@
     return entry.points || 0;
   }
 
-  // Filtre de catégorie : "versus" = jeux compétitifs seuls (défaut UI), "coop" = jeux coopératifs seuls, "all" = tout
+  // Catégorie d'un jeu : "versus" (compétitif multi), "duel" (1v1, strictement 2 joueurs),
+  // "coop" (coopératif), "duo" (coopératif à 2). Les flags coop/duel sont stockés sur le jeu.
+  function catOf(game) {
+    if (!game) return "versus";
+    if (game.coop && game.duel) return "duo";
+    if (game.coop) return "coop";
+    if (game.duel) return "duel";
+    return "versus";
+  }
+
+  // Filtre de catégorie sur les matchs : "versus" | "duel" | "coop" | "duo" | "all"
   function categoryFilter(state, category) {
     if (!category || category === "all") return null;
     return (m) => {
       const g = state.games.find((x) => x.id === m.gameId);
-      const coop = !!(g && g.coop);
-      return category === "coop" ? coop : !coop;
+      return catOf(g) === category;
     };
   }
 
@@ -162,6 +171,7 @@
     historyScores,
     perfPoints,
     entryPoints,
+    catOf,
     categoryFilter,
     computeMatchResults,
     playerTotalPoints,

@@ -27,6 +27,7 @@
       h("div", { class: "stat-card" }, h("div", { class: "label", text: "Victoires" }), h("div", { class: "value", text: String(stats.wins) }), h("div", { class: "sub", text: fmtPct(stats.winRate) + " · " + stats.podiums + " podiums" })),
       h("div", { class: "stat-card" }, h("div", { class: "label", text: "Points pondérés (⚔️ compétitif)" }), h("div", { class: "value", text: fmt1(stats.totalPoints) })),
       h("div", { class: "stat-card" }, h("div", { class: "label", text: "🤝 Coopératif" }), h("div", { class: "value", text: stats.coop.matches ? stats.coop.wins + "V/" + stats.coop.losses + "D" : "—" }), h("div", { class: "sub", text: stats.coop.matches ? fmtPct(stats.coop.winRate) + " de victoires · " + stats.coop.matches + " parties" : "aucune partie coop" })),
+      h("div", { class: "stat-card" }, h("div", { class: "label", text: "🏓 À 2 joueurs" }), h("div", { class: "value", text: stats.duel.matches ? stats.duel.wins + "V/" + stats.duel.losses + "D" : "—" }), h("div", { class: "sub", text: stats.duel.matches ? fmtPct(stats.duel.winRate) + " de victoires · " + stats.duel.matches + " parties duel/duo" : "aucune partie à 2" })),
       h("div", { class: "stat-card" }, h("div", { class: "label", text: "Série en cours" }), h("div", { class: "value", text: stats.streaks.current + " 🔥" }), h("div", { class: "sub", text: "Record : " + stats.streaks.longest })),
       h("div", { class: "stat-card" }, h("div", { class: "label", text: "Records perso" }), h("div", { class: "value", text: String(stats.recordsCount) + " ★" }))
     );

@@ -32,8 +32,10 @@
       ),
       h("label", { for: "cat", text: "Catégorie :", style: "margin:0" }),
       h("select", { id: "cat" },
-        h("option", { value: "versus", text: "⚔️ Compétitif (défaut — jeux avec scores)" }),
-        h("option", { value: "coop", text: "🤝 Coopératif (victoires d'équipe)" }),
+        h("option", { value: "versus", text: "⚔️ Compétitif (défaut — 3+ joueurs)" }),
+        h("option", { value: "duel", text: "🏓 Duel 1v1 (strictement 2 joueurs)" }),
+        h("option", { value: "coop", text: "🤝 Coopératif (3+ joueurs)" }),
+        h("option", { value: "duo", text: "👥 Duo (coop à 2 joueurs)" }),
         h("option", { value: "all", text: "📊 Tout" })
       ),
       h("button", { class: "secondary", text: "Tout cocher", onclick: () => { s.players.forEach((p) => selected.add(p.id)); renderBoard(); } }),
