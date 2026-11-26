@@ -109,6 +109,41 @@
     return root.TTT.store.load();
   }
 
+  function shareDialog(title, text) {
+    const ta = h("textarea", { readonly: true, style: "width:100%;min-height:110px" });
+    ta.value = text;
+    const overlay = h("div", { class: "overlay" },
+      h("div", { class: "dialog panel" },
+        h("h2", { style: "margin-top:0", text: title }),
+        ta,
+        h("div", { class: "btn-row" },
+          h("button", {
+            text: "📋 Copier",
+            onclick: async function () {
+              try { await navigator.clipboard.writeText(text); this.textContent = "✅ Copié !"; }
+              catch (e) { ta.focus(); ta.select(); }
+            }
+          }),
+          h("button", { class: "secondary", text: "Fermer", onclick: function () { overlay.remove(); } })
+        )
+      )
+    );
+    document.body.appendChild(overlay);
+    ta.focus();
+    ta.select();
+  }
+
+  function shareButton(state, matchId) {
+    return h("button", {
+      class: "secondary", text: "🔗 Partager", title: "Générer un code à envoyer à un ami",
+      onclick: function () {
+        try {
+          shareDialog("Code de la partie — copie-le et envoie-le", TTT.share.encodeMatch(state, matchId));
+        } catch (e) { alert(e.message); }
+      }
+    });
+  }
+
   function debounce(fn, ms) {
     let t = null;
     return function () {
@@ -147,6 +182,6 @@
   }
 
   root.TTT = root.TTT || {};
-  root.TTT.dom = { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerDot, playerLink, gameLink, download, fmtEntryResult };
+  root.TTT.dom = { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerDot, playerLink, gameLink, download, fmtEntryResult, shareDialog, shareButton };
   root.TTT.util = { daysAgoFilter, initNav, state, boot, sha256Hex, debounce };
 })(typeof window !== "undefined" ? window : globalThis);

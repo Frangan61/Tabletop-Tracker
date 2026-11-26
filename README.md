@@ -58,6 +58,19 @@ HOST=0.0.0.0 python3 server.py     # sur le PC
 ```
 puis sur l'iPhone, Safari → `http://<IP-du-PC>:8787` (IP du PC : `ipconfig` Windows / `ip addr` Mac/Linux), puis Partager → « Sur l'écran d'accueil ».
 
+### 📤 Partager une seule partie avec un ami (code)
+
+Pas besoin de tout exporter : chaque partie a un bouton **🔗 Partager** (dernières
+parties, fiche jeu, historique joueur). Il génère un **code texte** (commence par
+`TTT1:…`, ~500 caractères, copiable par SMS/WhatsApp/mail) :
+
+1. Paul enregistre la partie normalement, clique **🔗 Partager**, copie le code, l'envoie à Henri
+2. Henri : ⚙ Paramètres → **« Importer une partie partagée »** → colle le code → **Importer**
+3. La partie s'ajoute chez Henri : le **jeu et les joueurs sont créés automatiquement** s'il ne
+   les a pas (reconnus par nom / id BGG), les **rangs et points sont recalculés avec son
+   historique** (la perf est donc juste côté Henri), et un **anti-doublon** empêche d'importer
+   deux fois la même partie.
+
 ### Transférer des données existantes (tes parties)
 
 Les données sont dans le navigateur de chaque appareil. Pour copier ta base chez un ami :

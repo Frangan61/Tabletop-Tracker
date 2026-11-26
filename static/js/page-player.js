@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, gameLink, playerDot, fmtEntryResult } = TTT.dom;
+  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, gameLink, playerDot, fmtEntryResult, shareButton } = TTT.dom;
   const { state, boot } = TTT.util;
 
   boot("players", function (main) {
@@ -100,7 +100,7 @@
       );
       stats.history.forEach((hrow) => {
         t.appendChild(h("tr", null,
-          h("td", { text: fmtDate(hrow.match.date) }),
+          h("td", { text: fmtDate(hrow.match.date) }, " ", shareButton(s, hrow.match.id)),
           h("td", null, gameLink(s, hrow.match.gameId)),
           h("td", { class: "num", text: hrow.match.coopResult ? (hrow.match.coopResult === "win" ? "🏆" : "💀") + (hrow.match.teamScore != null ? " " + hrow.match.teamScore : "") : String(hrow.entry.score) }),
           h("td", null, rankBadge(hrow.entry.rank)),

@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerLink, playerDot, gameLink, fmtEntryResult } = TTT.dom;
+  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerLink, playerDot, gameLink, fmtEntryResult, shareButton } = TTT.dom;
   const { state, daysAgoFilter, boot } = TTT.util;
 
   boot("index", function (main) {
@@ -208,7 +208,7 @@
       recent.forEach((m) => {
         const entries = m.entries.slice().sort((a, b) => a.rank - b.rank);
         const card = h("div", { class: "panel match-card" },
-          h("div", { class: "head" }, h("span", { class: "title" }, gameLink(s, m.gameId)), h("span", { text: fmtDate(m.date) })),
+          h("div", { class: "head" }, h("span", { class: "title" }, gameLink(s, m.gameId)), h("span", null, h("span", { class: "muted small", text: fmtDate(m.date) }), " ", shareButton(s, m.id))),
           h("ul", null, entries.map((e) => {
             return h("li", null,
               h("span", null, rankBadge(e.rank), " ", playerLink(s, e.playerId)),

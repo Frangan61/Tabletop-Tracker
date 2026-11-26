@@ -93,6 +93,32 @@
       )
     ));
 
+    // Import d'une partie partagée via code (TTT1:...)
+    const codeIn = h("textarea", { id: "share-code", placeholder: "Colle ici le code reçu, il commence par TTT1:…", style: "min-height:90px" });
+    main.appendChild(h("div", { class: "panel" },
+      h("h2", { style: "margin-top:0", text: "📥 Importer une partie partagée" }),
+      h("p", { class: "muted small", text: "Un ami t'a envoyé un code de partie (bouton 🔗 Partager sur une partie) ? Colle-le ici : la partie s'ajoute à ta base (jeu et joueurs créés automatiquement s'ils n'existent pas, points recalculés avec ton historique)." }),
+      codeIn,
+      h("div", { class: "btn-row" }, h("button", {
+        text: "Importer ce code",
+        onclick: function () {
+          try {
+            const r = TTT.share.importMatchCode(state(), codeIn.value, TTT.store);
+            if (r.duplicate) {
+              alert("Cette partie est déjà dans ta base.");
+              return;
+            }
+            const parts = ["Partie importée ✅"];
+            if (r.createdGame) parts.push("jeu « " + r.game.name + " » créé");
+            if (r.createdPlayers.length) parts.push("joueur(s) créé(s) : " + r.createdPlayers.join(", "));
+            location.href = "index.html?msg=" + encodeURIComponent(parts.join(" · "));
+          } catch (e) {
+            alert("Import impossible : " + e.message);
+          }
+        }
+      }))
+    ));
+
     // Reset des scores globaux (toutes les parties), protégé par mot de passe (hash SHA-256 côté client)
     const RESET_PASSWORD_SHA256 = "47640e5f52b61369ed665d52e51fcd0d0577385d0d531b8eb91018ecb947df5d";
     main.appendChild(h("div", { class: "panel", style: "border-color: var(--danger)" },
