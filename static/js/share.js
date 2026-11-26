@@ -111,13 +111,15 @@
     return prev[n];
   }
 
-  // "Catan" vs "Katan" -> true (évite les doublons de jeux à l'import)
+  // "Catan" vs "Katan" -> true (évite les doublons), mais "Ticket to Ride" != "Ticket to Ride: Europe"
   function namesSimilar(a, b) {
     const x = normalizeName(a), y = normalizeName(b);
     if (!x || !y) return false;
     if (x === y) return true;
-    if (x.includes(y) || y.includes(x)) return true;
-    return Math.abs(x.length - y.length) <= 1 && levenshtein(x, y) <= 1;
+    const diff = Math.abs(x.length - y.length);
+    const shorter = Math.min(x.length, y.length);
+    if (shorter >= 5 && diff <= 3 && (x.includes(y) || y.includes(x))) return true;
+    return diff <= 1 && levenshtein(x, y) <= 1;
   }
 
   // Importe un code dans le state courant : crée le jeu/les joueurs manquants,

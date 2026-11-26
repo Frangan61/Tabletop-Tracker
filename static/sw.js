@@ -5,7 +5,7 @@
    - /api/* (proxy BGG) : réseau uniquement, jamais en cache. */
 "use strict";
 
-const CACHE = "ttt-v7";
+const CACHE = "ttt-v8";
 const SHELL = [
   "./",
   "index.html",
@@ -20,6 +20,7 @@ const SHELL = [
   "styles.css",
   "manifest.webmanifest",
   "js/scoring.js",
+  "js/seed-games.js",
   "js/store.js",
   "js/stats.js",
   "js/charts.js",

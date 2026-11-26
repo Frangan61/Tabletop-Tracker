@@ -160,6 +160,16 @@ Exemple : victoire (10 pts) avec un score qui bat 90 % de l'historique du jeu, p
 Les points calculés sont **stockés avec la partie** à l'enregistrement ; changez la
 formule dans les paramètres puis cliquez sur « Recalculer toutes les parties » si besoin.
 
+## Liste de base : 50 jeux populaires
+
+À la **première ouverture**, l'app pré-charge automatiquement **50 jeux populaires**
+(Catan, Carcassonne, Wingspan, Gloomhaven, Pandemic, 7 Wonders Duel…) avec leur **id BGG**,
+**poids (complexité)**, année, joueurs min/max, durée, mode (versus/duel/coop) et tags.
+Ce sont des valeurs de référence : un import BGG (avec clé) ou un code partagé les corrige
+ensuite automatiquement. Bouton « ✨ Ajouter les 50 jeux populaires manquants » sur la page
+Jeux pour compléter une bibliothèque existante (sans doublon : détection par id BGG ou nom
+similaire, ex. « Katan » = « Catan »).
+
 ## Tags & recherche de jeu
 
 Chaque jeu peut avoir des **tags** (catégories BGG + mécanismes récupérés

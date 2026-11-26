@@ -10,6 +10,7 @@
       games: [],
       matches: [],
       tournaments: [],
+      seeded: false,
       scoring: JSON.parse(JSON.stringify((root.TTT && root.TTT.scoring && root.TTT.scoring.DEFAULT_SCORING) || {
         rankPoints: [10, 7, 5, 3, 2, 1],
         complexityMultiplier: true,
@@ -24,10 +25,39 @@
     throw new Error("localStorage indisponible");
   }
 
+  function gameExists(state, g) {
+    if (g.bggId && state.games.some((x) => x.bggId === g.bggId)) return true;
+    const norm = (s) => String(s || "").toLowerCase();
+    if (state.games.some((x) => norm(x.name) === norm(g.name))) return true;
+    if (root.TTT.share && root.TTT.share.namesSimilar) {
+      if (state.games.some((x) => root.TTT.share.namesSimilar(x.name, g.name))) return true;
+    }
+    return false;
+  }
+
+  // Ajoute les jeux de la liste de référence (50 populaires) qui manquent. Retourne le nb ajoutés.
+  function seedDefaultGames(state) {
+    const seeds = (root.TTT && root.TTT.SEED_GAMES) || [];
+    let added = 0;
+    for (const g of seeds) {
+      if (gameExists(state, g)) continue;
+      addGame(state, g);
+      added++;
+    }
+    state.seeded = true;
+    save(state);
+    return added;
+  }
+
   function load() {
     try {
       const raw = storage().getItem(KEY);
-      if (!raw) return defaultState();
+      if (!raw) {
+        // Première ouverture : pré-charge la liste des 50 jeux populaires
+        const st = defaultState();
+        seedDefaultGames(st);
+        return st;
+      }
       const data = JSON.parse(raw);
       const base = defaultState();
       return {
@@ -36,6 +66,7 @@
         games: Array.isArray(data.games) ? data.games : [],
         matches: Array.isArray(data.matches) ? data.matches : [],
         tournaments: Array.isArray(data.tournaments) ? data.tournaments : [],
+        seeded: !!data.seeded,
         scoring: Object.assign(base.scoring, data.scoring || {}),
       };
     } catch (e) {
@@ -238,6 +269,8 @@
     normalizeTags,
     updateGame,
     deleteGame,
+    seedDefaultGames,
+    gameExists,
     addMatch,
     deleteMatch,
     resetMatches,

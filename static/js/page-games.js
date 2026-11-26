@@ -138,6 +138,14 @@
 
     const panel = h("div", { class: "panel" });
     main.appendChild(h("h2", { text: "Mes jeux (" + s.games.length + ")" }));
+    main.appendChild(h("div", { class: "btn-row", style: "margin-top:-6px" }, h("button", {
+      class: "secondary",
+      text: "✨ Ajouter les 50 jeux populaires manquants",
+      onclick: function () {
+        const added = TTT.store.seedDefaultGames(state());
+        location.href = "games.html?msg=" + encodeURIComponent(added ? added + " jeu(x) ajouté(s) depuis la liste de base (50 jeux populaires)." : "Tous les jeux de la liste sont déjà présents.");
+      }
+    })));
     main.appendChild(panel);
 
     function renderList() {
