@@ -36,4 +36,16 @@ for (const page of fs.readdirSync(STATIC).filter((f) => f.endsWith(".html"))) {
 const appjs = fs.readFileSync(path.join(STATIC, "js", "app.js"), "utf8");
 assert.ok(appjs.includes("serviceWorker.register"), "app.js n'enregistre pas le service worker");
 
+// --- cache-busting cohérent : ?v=N identique partout, N = version du SW, fichiers existants ---
+const swVersion = sw.match(/const CACHE = "ttt-v(\d+)"/)[1];
+for (const page of fs.readdirSync(STATIC).filter((f) => f.endsWith(".html"))) {
+  const html = fs.readFileSync(path.join(STATIC, page), "utf8");
+  const vs = [...html.matchAll(/\?v=(\d+)"/g)].map((m) => m[1]);
+  assert.ok(vs.length >= 10, page + " : assets versionnés (?v=)");
+  assert.ok(vs.every((v) => v === swVersion), page + " : ?v=" + vs[0] + " == sw ttt-v" + swVersion);
+  for (const m of html.matchAll(/src="(js\/[^"]+)"/g)) {
+    assert.ok(fs.existsSync(path.join(STATIC, m[1].split("?")[0])), page + " : " + m[1] + " existe");
+  }
+}
+
 console.log("pwa.test.js : OK (" + shell.length + " fichiers dans l'app shell, " + manifest.icons.length + " icônes)");
