@@ -69,8 +69,9 @@
       main.appendChild(h("h2", { text: "Évolution des points cumulés" }));
       const canvas = h("canvas", { class: "chart" });
       main.appendChild(canvas);
-      requestAnimationFrame(() => TTT.charts.drawLineChart(canvas, stats.evolution.map((e) => ({ y: e.total })), { color: p.color || "#4363d8" }));
-      window.addEventListener("resize", () => TTT.charts.drawLineChart(canvas, stats.evolution.map((e) => ({ y: e.total })), { color: p.color || "#4363d8" }));
+      const draw = () => TTT.charts.drawLineChart(canvas, stats.evolution.map((e) => ({ y: e.total })), { color: p.color || "#4363d8" });
+      requestAnimationFrame(draw);
+      window.addEventListener("resize", TTT.util.debounce(draw, 200));
     }
 
     if (stats.games.length) {

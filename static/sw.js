@@ -5,7 +5,7 @@
    - /api/* (proxy BGG) : réseau uniquement, jamais en cache. */
 "use strict";
 
-const CACHE = "ttt-v5";
+const CACHE = "ttt-v6";
 const SHELL = [
   "./",
   "index.html",
@@ -68,20 +68,24 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== location.origin) return;
   if (url.pathname.startsWith("/api/")) return; // BGG : réseau uniquement
 
-  const isDoc = url.pathname === "/" || /\.(html|js|css|webmanifest)$/.test(url.pathname);
-  if (isDoc) {
-    // network-first : fraîcheur garantie quand le serveur répond
+  const isPage = url.pathname === "/" || url.pathname.endsWith(".html");
+  if (isPage) {
+    // Pages : network-first (toujours la dernière version quand le serveur répond)
     event.respondWith(
       fetch(event.request)
         .then((resp) => putInCache(event.request, resp))
         .catch(() => caches.match(event.request).then((hit) => hit || caches.match("index.html")))
     );
   } else {
-    // assets (icônes, images) : cache-first
+    // Assets (js/css/manifest/icônes) : cache-first + revalidation en arrière-plan
+    // (stale-while-revalidate) -> chargement instantané, mise à jour pour la prochaine fois
     event.respondWith(
-      caches.match(event.request).then(
-        (hit) => hit || fetch(event.request).then((resp) => putInCache(event.request, resp))
-      )
+      caches.match(event.request).then((hit) => {
+        const fresh = fetch(event.request)
+          .then((resp) => putInCache(event.request, resp))
+          .catch(() => null);
+        return hit || fresh;
+      })
     );
   }
 });

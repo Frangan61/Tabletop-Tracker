@@ -11,6 +11,7 @@ directement (file://) avec saisie manuelle des jeux.
 
 import json
 import os
+import socket
 import sys
 import time
 import urllib.error
@@ -107,8 +108,19 @@ def parse_thing(xml_text):
 
 
 class Handler(SimpleHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"  # keep-alive : une seule connexion TCP pour tous les fichiers
+    timeout = 30  # ferme les connexions keep-alive inactives
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=ROOT, **kwargs)
+
+    def handle_one_request(self):
+        # Le navigateur ferme parfois la connexion en cours de transfert (reload rapide) :
+        # on ignore ces erreurs au lieu de spammer la traceback.
+        try:
+            super().handle_one_request()
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
 
     def _json(self, payload, status=200):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -119,6 +131,12 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        try:
+            self._do_GET()
+        except (BrokenPipeError, ConnectionResetError):
+            self.close_connection = True
+
+    def _do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         if parsed.path == "/api/bgg/search":
             q = urllib.parse.parse_qs(parsed.query).get("q", [""])[0].strip()
@@ -145,11 +163,24 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def log_message(self, fmt, *args):
-        sys.stderr.write("[ttt] " + fmt % args + "\n")
+        pass  # silencieux : le logging par requête ralentit le serveur (surtout sur téléphone)
+
+
+class Server(ThreadingHTTPServer):
+    daemon_threads = True
+
+    def get_request(self):
+        sock, addr = super().get_request()
+        # TCP_NODELAY : évite le délai Nagle/delayed-ACK (~40 ms par requête)
+        try:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except OSError:
+            pass
+        return sock, addr
 
 
 def main():
-    server = ThreadingHTTPServer((HOST, PORT), Handler)
+    server = Server((HOST, PORT), Handler)
     print(f"TableTop Tracker disponible sur http://{HOST}:{server.server_port}  (Ctrl+C pour arrêter)", flush=True)
     try:
         server.serve_forever()

@@ -145,7 +145,7 @@
         comparePanel.appendChild(canvas);
         const draw = () => TTT.charts.drawMultiLineChart(canvas, data.map((d) => ({ label: d.player.name, color: d.player.color, points: d.evolution.map((e) => e.y) })));
         requestAnimationFrame(draw);
-        window.addEventListener("resize", draw);
+        window.addEventListener("resize", TTT.util.debounce(draw, 200));
       }
 
       if (ids.length === 2) renderH2H(comparePanel, ids[0], ids[1], filter);
