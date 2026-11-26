@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  const { h, clear, fmt1, rankBadge, playerDot } = TTT.dom;
+  const { h, clear, fmt1, rankBadge, playerDot, autocomplete, filterItems } = TTT.dom;
   const { state, boot } = TTT.util;
 
   boot("new", function (main) {
@@ -16,12 +16,19 @@
       return;
     }
 
-    const gameSel = h("select", { id: "m-game" },
-      h("option", { value: "", text: "— Choisir un jeu —" }),
-      s.games.map((g) => h("option", { value: g.id, text: g.name + (g.coop ? " 🤝" : "") + " (poids " + g.complexity + (g.duration ? ", " + g.duration + " min" : "") + ")" }))
-    );
+    // Champ texte avec autocomplétion : taper filtre la liste ("c" -> tous les jeux avec un c, "cat" -> catan…)
+    let selectedGameId = "";
+    const gameInput = h("input", { id: "m-game", type: "text", placeholder: "Tape le nom du jeu… (ex: catan)", autocomplete: "off" });
+    const gameWrap = h("div", { style: "position:relative" }, gameInput);
     const preselect = new URLSearchParams(location.search).get("game");
-    if (preselect && s.games.some((g) => g.id === preselect)) gameSel.value = preselect;
+    if (preselect && s.games.some((g) => g.id === preselect)) {
+      selectedGameId = preselect;
+      gameInput.value = s.games.find((g) => g.id === preselect).name;
+    }
+    autocomplete(gameInput, () => s.games.map((g) => ({ label: g.name + (g.coop ? " 🤝" : ""), value: g.id })), (it) => {
+      selectedGameId = it.value;
+      refresh();
+    });
 
     const dateIn = h("input", { id: "m-date", type: "date", value: new Date().toISOString().slice(0, 10) });
     const notesIn = h("input", { id: "m-notes", type: "text", placeholder: "Notes éventuelles (facultatif)" });
@@ -45,7 +52,7 @@
       h("div", null, h("label", { for: "m-teamscore", text: "Score d'équipe (optionnel, pour le top 10)" }), teamScoreIn)
     );
 
-    const curGame = () => s.games.find((x) => x.id === gameSel.value);
+    const curGame = () => s.games.find((x) => x.id === selectedGameId);
     const isCoop = () => !!(curGame() && curGame().coop);
     const modeOf = () => TTT.scoring.catOf(curGame());
     const isTwoOnly = () => { const m = modeOf(); return m === "duel" || m === "duo"; };
@@ -77,7 +84,7 @@
     }
 
     function canSave() {
-      if (!gameSel.value || participants.length < 2) return false;
+      if (!selectedGameId || participants.length < 2) return false;
       if (isTwoOnly() && participants.length !== 2) return false;
       if (isCoop()) return !!coopResultSel.value;
       return participants.every((p) => typeof p.score === "number");
@@ -95,9 +102,9 @@
           h("td", null, h("button", { class: "secondary", text: "Retirer", onclick: function () { participants.splice(i, 1); refresh(); } }))
         ));
       });
-      if (gameSel.value && participants.length >= 2 && canSave()) {
+      if (selectedGameId && participants.length >= 2 && canSave()) {
         const st = state();
-        const results = TTT.scoring.computeMatchResults(st, { gameId: gameSel.value, date: dateIn.value, entries: currentEntries() });
+        const results = TTT.scoring.computeMatchResults(st, { gameId: selectedGameId, date: dateIn.value, entries: currentEntries() });
         results.forEach((r, i) => {
           const row = previewBody.children[i];
           row.children[2].textContent = "";
@@ -144,7 +151,7 @@
           const coop = isCoop();
           const teamRaw = teamScoreIn.value.trim().replace(",", ".");
           TTT.store.addMatch(st, {
-            gameId: gameSel.value,
+            gameId: selectedGameId,
             date: dateIn.value,
             notes: notesIn.value.trim(),
             entries: currentEntries(),
@@ -160,7 +167,7 @@
 
     main.appendChild(h("div", { class: "panel" },
       h("div", { class: "grid cols-3", style: "grid-template-columns: 2fr 1fr 2fr" },
-        h("div", null, h("label", { for: "m-game", text: "Jeu *" }), gameSel),
+        h("div", null, h("label", { for: "m-game", text: "Jeu *" }), gameWrap),
         h("div", null, h("label", { for: "m-date", text: "Date" }), dateIn),
         h("div", null, h("label", { for: "m-notes", text: "Notes" }), notesIn)
       ),
@@ -176,7 +183,6 @@
     main.appendChild(previewPanel);
     main.appendChild(h("div", { class: "btn-row" }, saveBtn, h("a", { class: "btn secondary", href: "index.html", text: "Annuler" })));
 
-    gameSel.addEventListener("change", refresh);
     coopResultSel.addEventListener("change", renderPreview);
     dateIn.addEventListener("change", renderPreview);
     refresh();

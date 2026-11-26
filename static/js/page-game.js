@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  const { h, fmtDate, fmt1, rankBadge, playerLink, fmtEntryResult, shareButton } = TTT.dom;
+  const { h, fmtDate, fmt1, rankBadge, playerLink, fmtEntryResult, shareButton, autocomplete, filterItems } = TTT.dom;
   const { state, boot } = TTT.util;
 
   boot("games", function (main) {
@@ -12,12 +12,20 @@
       return;
     }
 
+    const favBtn = h("button", {
+      class: "fav-star", text: g.favorite ? "⭐" : "☆", title: g.favorite ? "Retirer des favoris" : "Mettre en favori",
+      onclick: function () {
+        TTT.store.updateGame(state(), g.id, { favorite: !g.favorite });
+        location.reload();
+      },
+    });
     const headChildren = [
+      favBtn,
       h("div", null,
         h("h1", { style: "margin:0 0 6px", text: g.name }),
         h("div", { class: "muted" },
           h("span", { class: "weight", text: "Poids BGG : " + g.complexity + " / 5" }),
-          "  ·  " + (function () { const c = TTT.scoring.catOf(g); return c === "duel" ? "🏓 duel 1v1  ·  " : c === "coop" ? "🤝 coopératif  ·  " : c === "duo" ? "👥 duo  ·  " : "⚔️ compétitif  ·  "; })() + (g.year ? "Année " + g.year + "  ·  " : "") + (g.duration ? "⏱ " + g.duration + " min  ·  " : "") + (g.minPlayers && g.maxPlayers ? "Joueurs " + g.minPlayers + "–" + g.maxPlayers : ""),
+          "  ·  " + (function () { const c = TTT.scoring.catOf(g); return c === "duel" ? "🏓 duel 1v1  ·  " : c === "coop" ? "🤝 coopératif  ·  " : c === "duo" ? "👥 duo  ·  " : "⚔️ compétitif  ·  "; })() + (g.bestPlayers ? "👍 meilleur à " + g.bestPlayers + " joueurs  ·  " : "") + (g.year ? "Année " + g.year + "  ·  " : "") + (g.duration ? "⏱ " + g.duration + " min  ·  " : "") + (g.minPlayers && g.maxPlayers ? "Joueurs " + g.minPlayers + "–" + g.maxPlayers : ""),
           g.bggId ? "  ·  " + h("a", { href: "https://boardgamegeek.com/boardgame/" + g.bggId, target: "_blank", rel: "noopener", text: "Voir sur BGG ↗" }) : null
         ),
         (g.tags || []).length ? h("div", { class: "tag-cloud" }, g.tags.map((t) => h("span", { class: "chip", text: t }))) : null
@@ -49,6 +57,43 @@
       });
       boardPanel.appendChild(t);
     }
+
+    // --- Tags éditables + favori ---
+    main.appendChild(h("h2", { text: "🏷 Tags & favori" }));
+    const allTags = [...new Set(s.games.flatMap((x) => x.tags || []))].sort();
+    const tagInput = h("input", { id: "gtag-add", type: "text", placeholder: "Ajouter un tag… (autocomplétion ou nouveau)", autocomplete: "off" });
+    const tagWrap = h("div", { style: "position:relative;max-width:340px" }, tagInput);
+    function addTag(t) {
+      t = String(t || "").trim();
+      if (!t) return;
+      const st = state();
+      const gg = st.games.find((x) => x.id === g.id);
+      const tags = [...(gg.tags || [])];
+      if (!tags.some((x) => x.toLowerCase() === t.toLowerCase())) {
+        tags.push(t);
+        TTT.store.updateGame(st, g.id, { tags });
+      }
+      location.reload();
+    }
+    const tagItems = () =>
+      filterItems(allTags.map((t) => ({ label: t, value: t })), tagInput.value)
+        .filter((it) => !(g.tags || []).map((x) => x.toLowerCase()).includes(it.label.toLowerCase()));
+    autocomplete(tagInput, tagItems, (it) => addTag(it.value));
+
+    main.appendChild(h("div", { class: "panel" },
+      h("div", { class: "tag-cloud" }, (g.tags || []).length
+        ? g.tags.map((t) => h("span", { class: "chip" }, t + " ", h("button", {
+            class: "fav-star", text: "✕", style: "font-size:11px;padding:0 2px",
+            onclick: function () {
+              const st = state();
+              const gg = st.games.find((x) => x.id === g.id);
+              TTT.store.updateGame(st, g.id, { tags: (gg.tags || []).filter((x) => x !== t) });
+              location.reload();
+            },
+          })))
+        : h("span", { class: "muted small", text: "Aucun tag pour l'instant." })),
+      tagWrap
+    ));
 
     main.appendChild(h("h2", { text: "🏆 Top 10 des scores — tous joueurs confondus" }));
     const topPanel = h("div", { class: "panel" });

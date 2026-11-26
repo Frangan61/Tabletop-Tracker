@@ -102,7 +102,7 @@ mem = {};
 sA = store.defaultState();
 const pA = store.addPlayer(sA, "Paul");
 const hA = store.addPlayer(sA, "Henri");
-const catA = store.addGame(sA, { name: "Catan", bggId: "13", complexity: 2.3, year: 1995, minPlayers: 3, maxPlayers: 4, duration: 60, tags: ["Commerce", "Négociation"], image: "https://cf.geekdo-images.com/img.png" });
+const catA = store.addGame(sA, { name: "Catan", bggId: "13", complexity: 2.3, year: 1995, minPlayers: 3, maxPlayers: 4, duration: 60, bestPlayers: 4, favorite: true, tags: ["Commerce", "Négociation"], image: "https://cf.geekdo-images.com/img.png" });
 const mCat = store.addMatch(sA, { gameId: catA.id, date: "2025-03-01", entries: [{ playerId: pA.id, score: 10 }, { playerId: hA.id, score: 8 }] });
 const codeCat = share.encodeMatch(store.load(), mCat.id);
 const decCat = share.decodeMatch(codeCat);
@@ -127,8 +127,15 @@ assert.strictEqual(gFixed.duration, 60, "durée ajoutée");
 assert.strictEqual(gFixed.year, 1995);
 assert.deepStrictEqual(gFixed.tags, ["Commerce", "Négociation"], "tags ajoutés");
 assert.strictEqual(gFixed.image, "https://cf.geekdo-images.com/img.png", "image ajoutée");
+assert.strictEqual(gFixed.bestPlayers, 4, "bestPlayers rectifié (null -> 4)");
+assert.strictEqual(gFixed.favorite, true, "favori repris du code");
 assert.strictEqual(stH2.matches.length, 1, "partie importée");
 // les points de la partie importée utilisent le poids rectifié : Paul rang 1 -> 10 x 2.3 = 23
 assert.strictEqual(stH2.matches[0].entries.find((e) => e.score === 10).points, 23, "points recalcules avec le poids rectifie");
 
-console.log("share.test.js : OK (encode/decode, import multi-appareils, anti-doublon, rectification du jeu existant, recalcul, codes invalides)");
+// --- bestPlayers + favorite embarqués dans le code ---
+const dec2 = share.decodeMatch(codeCat);
+assert.strictEqual(dec2.game.bestPlayers, 4, "Catan bestPlayers=4 embarqué");
+assert.strictEqual(typeof dec2.game.favorite, "boolean");
+
+console.log("share.test.js : OK (encode/decode, import multi-appareils, anti-doublon, rectification du jeu existant, bestPlayers, recalcul, codes invalides)");

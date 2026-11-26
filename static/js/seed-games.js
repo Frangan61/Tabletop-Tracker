@@ -19,7 +19,8 @@
       "Négociation",
       "Dé",
       "Stratégie"
-    ]
+    ],
+    "bestPlayers": 4
   },
   {
     "name": "Carcassonne",
@@ -35,7 +36,8 @@
       "Tuiles",
       "Pose de tuiles",
       "Familial"
-    ]
+    ],
+    "bestPlayers": 3
   },
   {
     "name": "Ticket to Ride",
@@ -51,7 +53,8 @@
       "Trains",
       "Routes",
       "Familial"
-    ]
+    ],
+    "bestPlayers": 3
   },
   {
     "name": "Pandemic",
@@ -67,7 +70,8 @@
       "Coopératif",
       "Sauver le monde",
       "Cartes"
-    ]
+    ],
+    "bestPlayers": 3
   },
   {
     "name": "Wingspan",
@@ -83,7 +87,8 @@
       "Oiseaux",
       "Moteur de combos",
       "Cartes"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "7 Wonders",
@@ -99,7 +104,8 @@
       "Draft de cartes",
       "Civilisation",
       "Stratégie"
-    ]
+    ],
+    "bestPlayers": 5
   },
   {
     "name": "Azul",
@@ -115,7 +121,8 @@
       "Tuiles",
       "Abstrait",
       "Pose de tuiles"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "Splendor",
@@ -131,7 +138,8 @@
       "Gemmes",
       "Moteur de combos",
       "Économie"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "Dixit",
@@ -147,7 +155,8 @@
       "Créatif",
       "Party",
       "Cartes illustrées"
-    ]
+    ],
+    "bestPlayers": 6
   },
   {
     "name": "Codenames",
@@ -164,7 +173,8 @@
       "Équipes",
       "Party",
       "Déduction"
-    ]
+    ],
+    "bestPlayers": 6
   },
   {
     "name": "Terraforming Mars",
@@ -180,7 +190,8 @@
       "Science-fiction",
       "Moteur de combos",
       "Gestion de ressources"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "Gloomhaven",
@@ -197,7 +208,8 @@
       "Campagne",
       "Combat tactique",
       "Scénarios"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Brass: Birmingham",
@@ -213,7 +225,8 @@
       "Économie",
       "Industriel",
       "Réseaux"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Arkham Horror: The Card Game",
@@ -230,7 +243,8 @@
       "Horreur",
       "Cartes",
       "Campagne"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "7 Wonders Duel",
@@ -246,7 +260,8 @@
       "Duel",
       "Draft",
       "Civilisation"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "Hanabi",
@@ -262,7 +277,8 @@
       "Coopératif",
       "Cartes",
       "Communication limitée"
-    ]
+    ],
+    "bestPlayers": 3
   },
   {
     "name": "The Crew",
@@ -279,7 +295,8 @@
       "Astronautes",
       "Levées",
       "Missions"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Spirit Island",
@@ -296,7 +313,8 @@
       "Anti-colonial",
       "Éléments",
       "Stratégie"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Root",
@@ -313,7 +331,8 @@
       "Contrôle de zone",
       "Animaux",
       "Stratégie"
-    ]
+    ],
+    "bestPlayers": 3
   },
   {
     "name": "Scythe",
@@ -330,7 +349,8 @@
       "Contrôle de zone",
       "Moteur de combos",
       "1920s"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Blood Rage",
@@ -347,7 +367,8 @@
       "Draft",
       "Combat",
       "Contrôle de zone"
-    ]
+    ],
+    "bestPlayers": 3
   },
   {
     "name": "Viticulture",
@@ -363,7 +384,8 @@
       "Placement d'ouvriers",
       "Vin",
       "Stratégie"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Agricola",
@@ -379,7 +401,8 @@
       "Placement d'ouvriers",
       "Agriculture",
       "Stratégie"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Puerto Rico",
@@ -396,7 +419,8 @@
       "Colonies",
       "Économie",
       "Stratégie"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Power Grid",
@@ -412,7 +436,8 @@
       "Enchères",
       "Réseaux électriques",
       "Économie"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Ticket to Ride: Europe",
@@ -428,7 +453,8 @@
       "Trains",
       "Routes",
       "Familial"
-    ]
+    ],
+    "bestPlayers": 3
   },
   {
     "name": "Love Letter",
@@ -445,7 +471,8 @@
       "Déduction",
       "Party",
       "Royauté"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "Jaipur",
@@ -462,7 +489,8 @@
       "Commerce",
       "Cartes",
       "Échange"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "Patchwork",
@@ -479,7 +507,8 @@
       "Tuiles",
       "Abstrait",
       "2 joueurs"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "King of Tokyo",
@@ -496,7 +525,8 @@
       "Dés",
       "Combat",
       "Hasard"
-    ]
+    ],
+    "bestPlayers": 4
   },
   {
     "name": "Exploding Kittens",
@@ -513,7 +543,8 @@
       "Chatons",
       "Hasard",
       "Humour"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Munchkin",
@@ -530,7 +561,8 @@
       "Humour",
       "Cartes",
       "Party"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Uno",
@@ -547,7 +579,8 @@
       "Party",
       "Familial",
       "Uno"
-    ]
+    ],
+    "bestPlayers": 4
   },
   {
     "name": "Dobble (Spot it)",
@@ -564,7 +597,8 @@
       "Réflexes",
       "Observation",
       "Rapide"
-    ]
+    ],
+    "bestPlayers": 4
   },
   {
     "name": "The Resistance",
@@ -581,7 +615,8 @@
       "Espionnage",
       "Équipes",
       "Social"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "The Resistance: Avalon",
@@ -598,7 +633,8 @@
       "Médiéval",
       "Équipes",
       "Social"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Secret Hitler",
@@ -616,7 +652,8 @@
       "Social",
       "Party",
       "Politique"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Betrayal at House on the Hill",
@@ -633,7 +670,8 @@
       "Tuiles",
       "Exploration",
       "Asymétrique"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Mansions of Madness 2e",
@@ -651,7 +689,8 @@
       "Appli",
       "Scénarios",
       "Enquête"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Gloomhaven: Jaws of the Lion",
@@ -668,7 +707,8 @@
       "Campagne",
       "Combat",
       "Scénarios"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Cascadia",
@@ -685,7 +725,8 @@
       "Animaux",
       "Pose de tuiles",
       "Familial"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Calico",
@@ -702,7 +743,8 @@
       "Chatons",
       "Motifs",
       "Familial"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Parks",
@@ -719,7 +761,8 @@
       "Voyage",
       "Ressources",
       "Photo"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Everdell",
@@ -736,7 +779,8 @@
       "Forêt",
       "Créatures",
       "Ressources"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "The Quacks of Quedlinburg",
@@ -753,7 +797,8 @@
       "Sacs",
       "Alchimie",
       "Familial"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Star Realms",
@@ -770,7 +815,8 @@
       "Science-fiction",
       "Combat",
       "2 joueurs"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "Dominion",
@@ -786,7 +832,8 @@
       "Deck-building",
       "Stratégie",
       "Cartes"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "Chess (Échecs)",
@@ -803,7 +850,8 @@
       "Duel",
       "Classique",
       "Stratégie"
-    ]
+    ],
+    "bestPlayers": 2
   },
   {
     "name": "Monopoly",
@@ -820,7 +868,8 @@
       "Immobilier",
       "Familial",
       "Hasard"
-    ]
+    ],
+    "bestPlayers": null
   },
   {
     "name": "Risk",
@@ -837,7 +886,8 @@
       "Dés",
       "Contrôle de zone",
       "Hasard"
-    ]
+    ],
+    "bestPlayers": null
   }
 ];
   if (typeof module !== "undefined" && module.exports) module.exports = root.TTT.SEED_GAMES;

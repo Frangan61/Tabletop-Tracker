@@ -63,4 +63,15 @@ const s = TTT.store.load();
 const sel = h("select", null, h("option", { value: "", text: "choisir" }), s.games.map((g) => h("option", { value: g.id, text: g.name })));
 assert.strictEqual(sel.children.length, 51, "select avec 50 jeux + placeholder");
 
-console.log("app.test.js : OK (h() aplatie les tableaux, attributs, select map)");
+// --- filterItems : recherche "contient", insensible casse/accents ---
+const { filterItems } = TTT.dom;
+const items = [{ label: "Catan" }, { label: "Carcassonne" }, { label: "Wingspan" }, { label: "Échecs" }];
+assert.strictEqual(filterItems(items, "c").length, 3, "'c' -> Catan, Carcassonne, Échecs (echecs contient c)");
+assert.strictEqual(filterItems(items, "CAT").length, 1, "'CAT' -> Catan seul");
+assert.strictEqual(filterItems(items, "cat")[0].label, "Catan");
+assert.strictEqual(filterItems(items, "ÉCH").length, 1, "accents ignorés: 'ÉCH' -> Échecs");
+assert.strictEqual(filterItems(items, "").length, 4, "vide -> tout");
+assert.strictEqual(filterItems(items, "zzz").length, 0);
+assert.ok(typeof TTT.dom.autocomplete === "function", "autocomplete exposé");
+
+console.log("app.test.js : OK (h(), attributs, select map, filterItems/autocomplete)");

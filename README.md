@@ -170,6 +170,19 @@ ensuite automatiquement. Bouton « ✨ Ajouter les 50 jeux populaires manquants 
 Jeux pour compléter une bibliothèque existante (sans doublon : détection par id BGG ou nom
 similaire, ex. « Katan » = « Catan »).
 
+## Autocomplétion, favoris, tags éditables, « Best » BGG
+
+- **Autocomplétion** (au lieu des menus déroulants) : dans « Nouvelle partie » pour choisir le jeu
+  et dans « Trouver un jeu » pour les tags — taper filtre la liste en direct (« c » → tous les jeux
+  avec un « c », « cat » → Catan…), insensible à la casse/accents ; Entrée prend la 1ʳᵉ proposition
+  ou la saisie libre
+- **Fiche jeu** : ajouter/retirer des **tags** (autocomplétion + nouveau tag libre) et mettre le jeu
+  en **⭐ favori** (badge dans la liste des jeux, filtre « ⭐ favoris » dans la recherche)
+- **« Best » BGG** (`suggested_numplayers` = Best) : champ `bestPlayers` sur chaque jeu —
+  rempli automatiquement via l'API BGG, éditable à la main, affiché sur la fiche (👍 meilleur à
+  N joueurs), filtre « 👍 meilleur à N » dans la recherche, et embarqué dans les codes partagés
+  (rectifié à l'import si erroné)
+
 ## Tags & recherche de jeu
 
 Chaque jeu peut avoir des **tags** (catégories BGG + mécanismes récupérés

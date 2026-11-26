@@ -129,6 +129,8 @@
       duration: typeof data.duration === "number" && data.duration > 0 ? Math.round(data.duration) : null,
       coop: !!data.coop || data.mode === "coop" || data.mode === "duo",
       duel: !!data.duel || data.mode === "duel" || data.mode === "duo",
+      bestPlayers: typeof data.bestPlayers === "number" && data.bestPlayers >= 1 ? Math.round(data.bestPlayers) : null,
+      favorite: !!data.favorite,
       tags: normalizeTags(data.tags || []),
       image: data.image || null,
       createdAt: new Date().toISOString(),

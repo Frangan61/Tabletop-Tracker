@@ -34,6 +34,8 @@
             duration: game.duration || null,
             coop: !!game.coop,
             duel: !!game.duel,
+            bestPlayers: game.bestPlayers || null,
+            favorite: !!game.favorite,
             tags: game.tags || [],
             image: game.image || null,
           }
@@ -81,6 +83,8 @@
         duration: typeof data.game.duration === "number" ? data.game.duration : null,
         coop: !!data.game.coop,
         duel: !!data.game.duel,
+        bestPlayers: typeof data.game.bestPlayers === "number" && data.game.bestPlayers >= 1 ? Math.round(data.game.bestPlayers) : null,
+        favorite: !!data.game.favorite,
         tags: Array.isArray(data.game.tags) ? data.game.tags : [],
         image: typeof data.game.image === "string" && data.game.image ? data.game.image : null,
       },
@@ -150,6 +154,8 @@
       if (data.game.tags && data.game.tags.length) fields.tags = [...(game.tags || []), ...data.game.tags];
       if (data.game.coop) fields.coop = true;
       if (data.game.duel) fields.duel = true;
+      if (data.game.bestPlayers && data.game.bestPlayers !== game.bestPlayers) fields.bestPlayers = data.game.bestPlayers;
+      if (data.game.favorite) fields.favorite = true;
       if (Object.keys(fields).length) {
         store.updateGame(state, game.id, fields);
         updatedGame = true;

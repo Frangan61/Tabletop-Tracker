@@ -90,6 +90,14 @@ def parse_thing(xml_text):
     def values(path):
         return [el.get("value") for el in item.findall(path) if el.get("value")]
 
+    # "Best" de suggested_numplayers : meilleur nombre de joueurs selon les votes BGG
+    best_players = None
+    for poll in item.findall("./poll"):
+        if poll.get("name") == "suggested_numplayers":
+            bests = [r.get("numplayers") for r in poll.findall("./results/result") if r.get("value") == "Best"]
+            if bests:
+                best_players = max(int(b) for b in bests if b.isdigit())
+
     return {
         "id": item.get("id"),
         "name": primary.get("value") if primary is not None else "Sans nom",
@@ -97,6 +105,7 @@ def parse_thing(xml_text):
         "complexity": weight,
         "minPlayers": text_of(item, "./minplayers"),
         "maxPlayers": text_of(item, "./maxplayers"),
+        "bestPlayers": best_players,
         "playingtime": text_of(item, "./playingtime"),
         "minplaytime": text_of(item, "./minplaytime"),
         "maxplaytime": text_of(item, "./maxplaytime"),

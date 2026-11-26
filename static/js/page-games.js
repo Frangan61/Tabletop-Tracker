@@ -66,6 +66,7 @@
     const fMin = h("input", { id: "gmin", type: "number", min: "1", max: "20", placeholder: "Min" });
     const fMax = h("input", { id: "gmax", type: "number", min: "1", max: "20", placeholder: "Max" });
     const fDuration = h("input", { id: "gduration", type: "number", min: "5", max: "600", step: "5", placeholder: "Durée moy. (min)" });
+    const fBest = h("input", { id: "gbest", type: "number", min: "1", max: "20", placeholder: "Meilleur à (nb joueurs)" });
     const fTags = h("input", { id: "gtags", type: "text", placeholder: "Tags séparés par des virgules (ex: Stratégie, Cartes, Ambiance)" });
     const fMode = h("select", { id: "gmode" },
       h("option", { value: "versus", text: "⚔️ Compétitif — scores individuels (3+ joueurs ou libre)" }),
@@ -90,6 +91,7 @@
       fMin.value = t.minPlayers || "";
       fMax.value = t.maxPlayers || "";
       fDuration.value = t.playingtime || "";
+      fBest.value = t.bestPlayers || "";
       const tags = [...(t.categories || []), ...(t.mechanics || [])];
       fTags.value = tags.slice(0, 12).join(", ");
       const coopBgg = (t.categories || []).some((c) => /cooperative/i.test(c));
@@ -108,8 +110,9 @@
         h("div", null, h("label", { for: "gmin", text: "Joueurs min" }), fMin),
         h("div", null, h("label", { for: "gmax", text: "Joueurs max" }), fMax)
       ),
-      h("div", { class: "grid cols-2" },
+      h("div", { class: "grid cols-3", style: "grid-template-columns: 1fr 1fr 1fr" },
         h("div", null, h("label", { for: "gduration", text: "Durée moyenne (minutes)" }), fDuration),
+        h("div", null, h("label", { for: "gbest", text: "👍 Meilleur à (nb joueurs, BGG « Best »)" }), fBest),
         h("div", null, h("label", { for: "gtags", text: "Tags / catégories (séparés par des virgules)" }), fTags)
       ),
       h("div", null, h("label", { for: "gmode", text: "Type de jeu (catégorie de classement)" }), fMode),
@@ -126,6 +129,7 @@
             minPlayers: fMin.value ? parseInt(fMin.value, 10) : null,
             maxPlayers: fMax.value ? parseInt(fMax.value, 10) : null,
             duration: fDuration.value ? parseInt(fDuration.value, 10) : null,
+            bestPlayers: fBest.value ? parseInt(fBest.value, 10) : null,
             mode: fMode.value,
             tags: fTags.value,
             image: fImg.value || null,
@@ -166,15 +170,16 @@
         return;
       }
       const t = h("table", null,
-        h("tr", null, h("th", { text: "Jeu" }), h("th", { text: "Tags" }), h("th", { class: "num", text: "Poids BGG" }), h("th", { class: "num", text: "Durée" }), h("th", { class: "num", text: "Joueurs" }), h("th", { class: "num", text: "Parties" }), h("th", { text: "" }))
+        h("tr", null, h("th", { text: "Jeu" }), h("th", { text: "Tags" }), h("th", { class: "num", text: "Poids BGG" }), h("th", { class: "num", text: "Durée" }), h("th", { class: "num", text: "👍 Best" }), h("th", { class: "num", text: "Joueurs" }), h("th", { class: "num", text: "Parties" }), h("th", { text: "" }))
       );
       games.forEach((g) => {
         const count = st.matches.filter((m) => m.gameId === g.id).length;
         t.appendChild(h("tr", null,
-          h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: g.name }), " ", modeBadge(g), g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
+          h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: (g.favorite ? "⭐ " : "") + g.name }), " ", modeBadge(g), g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
           h("td", null, (g.tags || []).map((tg) => h("span", { class: "chip", text: tg }))),
           h("td", { class: "num" }, h("span", { class: "weight", text: String(g.complexity) })),
-          h("td", { class: "num", text: g.duration ? g.duration + " min" : "—" }),
+          h("td", { class: "num", text: g.duration ? g.duration + " min" : "—" }) ,
+          h("td", { class: "num", text: g.bestPlayers ? "👍 " + g.bestPlayers : "—" }),
           h("td", { class: "num", text: g.minPlayers && g.maxPlayers ? g.minPlayers + "–" + g.maxPlayers : "—" }),
           h("td", { class: "num", text: String(count) }),
           h("td", null, h("button", {

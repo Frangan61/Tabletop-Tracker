@@ -152,6 +152,51 @@
     });
   }
 
+  function normText(s) {
+    return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+
+  // Filtre "contient" insensible à la casse/accents : "c" -> tous les jeux avec un c, "cat" -> "catan"
+  function filterItems(items, q) {
+    const nq = normText(q).trim();
+    if (!nq) return items.slice();
+    return items.filter((it) => normText(it.label).includes(nq));
+  }
+
+  // Champ texte avec liste déroulante filtrée au fur et à mesure.
+  // getItems() -> [{label, value, sub}] ; onPick(item) au clic ou Entrée.
+  function autocomplete(input, getItems, onPick) {
+    let box = null;
+    function close() {
+      if (box) { box.remove(); box = null; }
+    }
+    function render() {
+      close();
+      const items = filterItems(getItems(), input.value).slice(0, 12);
+      if (!input.value.trim() || !items.length) return;
+      box = h("div", { class: "ac-list" },
+        items.map((it) =>
+          h("div", {
+            class: "ac-item",
+            text: it.label + (it.sub ? "  ·  " + it.sub : ""),
+            onclick: () => { input.value = it.label; onPick(it); close(); },
+          })
+        )
+      );
+      (input.parentNode || document.body).appendChild(box);
+    }
+    input.addEventListener("input", render);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const items = filterItems(getItems(), input.value);
+        const pick = items[0] || (input.value.trim() ? { label: input.value.trim(), value: input.value.trim() } : null);
+        if (pick) { input.value = pick.label; onPick(pick); close(); e.preventDefault(); }
+      } else if (e.key === "Escape") close();
+    });
+    input.addEventListener("blur", () => setTimeout(close, 150));
+    return { close };
+  }
+
   function debounce(fn, ms) {
     let t = null;
     return function () {
@@ -201,6 +246,6 @@
   }
 
   root.TTT = root.TTT || {};
-  root.TTT.dom = { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerDot, playerLink, gameLink, download, fmtEntryResult, shareDialog, shareButton };
+  root.TTT.dom = { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerDot, playerLink, gameLink, download, fmtEntryResult, shareDialog, shareButton, autocomplete, filterItems, normText };
   root.TTT.util = { daysAgoFilter, initNav, state, boot, sha256Hex, debounce };
 })(typeof window !== "undefined" ? window : globalThis);
