@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  const { h, fmtDate, fmt1, rankBadge, playerLink, fmtEntryResult, shareButton, autocomplete, filterItems } = TTT.dom;
+  const { h, fmtDate, fmt1, rankBadge, playerLink, fmtEntryResult, shareButton, deleteMatchButton, autocomplete, filterItems } = TTT.dom;
   const { state, boot } = TTT.util;
 
   boot("games", function (main) {
@@ -219,7 +219,7 @@
       gameMatches.forEach((m) => {
         const entries = m.entries.slice().sort((a, b) => a.rank - b.rank);
         t.appendChild(h("tr", null,
-          h("td", { text: fmtDate(m.date), style: "white-space:nowrap" }, " ", shareButton(s, m.id)),
+          h("td", { text: fmtDate(m.date), style: "white-space:nowrap" }, " ", shareButton(s, m.id), " ", deleteMatchButton(s, m.id)),
           h("td", null, entries.map((e) => {
             const p = s.players.find((x) => x.id === e.playerId);
             return h("div", { class: "small" }, rankBadge(e.rank), " ", h("b", { text: p ? p.name : "?" }), h("span", { class: "muted", text: " — " + fmtEntryResult(m, e) + " · " + fmt1(e.points) + " pts" + (e.isRecord ? " ★" : "") }));
