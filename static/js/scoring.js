@@ -12,8 +12,9 @@
     return Math.round(n * 10) / 10;
   }
 
-  function computeRanks(scores) {
-    return scores.map((s) => 1 + scores.filter((x) => x > s).length);
+  // invert=true : le PLUS PETIT score gagne (jeux type golf)
+  function computeRanks(scores, invert) {
+    return scores.map((s) => 1 + scores.filter((x) => (invert ? x < s : x > s)).length);
   }
 
   function rankPointsFor(rank, config) {
@@ -39,19 +40,20 @@
   }
 
   // Bonus dynamique : position du score dans l'historique du jeu.
-  function perfPoints(history, score, config) {
+  // invert=true (plus petit score gagne) : battre l'historique = score PLUS PETIT.
+  function perfPoints(history, score, config, invert) {
     if (!history.length) return 0;
     const mode = config.perfMode === "zscore" ? "zscore" : "percentile";
     const coef = typeof config.perfCoef === "number" && config.perfCoef >= 0 ? config.perfCoef : DEFAULT_SCORING.perfCoef;
     if (mode === "zscore") {
       const mu = history.reduce((a, b) => a + b, 0) / history.length;
       const sigma = Math.sqrt(history.reduce((a, b) => a + (b - mu) * (b - mu), 0) / history.length);
-      if (sigma < 1e-9) return score > mu ? coef : 0;
+      if (sigma < 1e-9) return invert ? (score < mu ? coef : 0) : (score > mu ? coef : 0);
       const z = (score - mu) / sigma;
-      return coef * Math.min(Math.max(z, 0), 3) / 3;
+      return coef * Math.min(Math.max(invert ? -z : z, 0), 3) / 3;
     }
-    const below = history.filter((s) => s < score).length;
-    return coef * (below / history.length);
+    const beaten = history.filter((s) => (invert ? s > score : s < score)).length;
+    return coef * (beaten / history.length);
   }
 
   function computeMatchResults(state, input) {
@@ -59,15 +61,17 @@
     const game = state.games.find((g) => g.id === input.gameId) || { complexity: 1 };
     const weight = weightFor(game, config);
     const scores = input.entries.map((e) => e.score);
+    const invert = !!game.lowestScoreWins;
     // Jeu coopératif : victoire -> rang 1 pour tous ; défaite -> dernier rang ex-aequo pour tous
-    const ranks = game.coop && input.coopResult === "loss" ? scores.map(() => scores.length) : computeRanks(scores);
+    const ranks = game.coop && input.coopResult === "loss" ? scores.map(() => scores.length) : computeRanks(scores, invert);
     const history = historyScores(state, input.gameId, input.date);
     const maxHist = history.length ? Math.max.apply(null, history) : null;
+    const minHist = history.length ? Math.min.apply(null, history) : null;
     return input.entries.map((e, i) => {
       const base = rankPointsFor(ranks[i], config);
       // Jeu coopératif : pas de score individuel -> pas de perf dynamique
-      const perf = game.coop ? 0 : perfPoints(history, e.score, config);
-      const isRecord = maxHist !== null && e.score > maxHist;
+      const perf = game.coop ? 0 : perfPoints(history, e.score, config, invert);
+      const isRecord = history.length ? (invert ? e.score < minHist : e.score > maxHist) : false;
       return {
         playerId: e.playerId,
         score: e.score,
@@ -113,12 +117,14 @@
     return "versus";
   }
 
-  // Filtre de catégorie sur les matchs : "versus" | "duel" | "coop" | "duo" | "all"
+  // Filtre de catégorie sur les matchs : "all", une catégorie, ou un TABLEAU de catégories
   function categoryFilter(state, category) {
     if (!category || category === "all") return null;
+    const cats = Array.isArray(category) ? category : [category];
+    if (!cats.length || cats.includes("all")) return null;
     return (m) => {
       const g = state.games.find((x) => x.id === m.gameId);
-      return catOf(g) === category;
+      return cats.includes(catOf(g));
     };
   }
 

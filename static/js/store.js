@@ -131,6 +131,7 @@
       duel: !!data.duel || data.mode === "duel" || data.mode === "duo",
       bestPlayers: typeof data.bestPlayers === "number" && data.bestPlayers >= 1 ? Math.round(data.bestPlayers) : null,
       favorite: !!data.favorite,
+      lowestScoreWins: !!data.lowestScoreWins,
       tags: normalizeTags(data.tags || []),
       image: data.image || null,
       createdAt: new Date().toISOString(),

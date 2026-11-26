@@ -138,4 +138,37 @@ const dec2 = share.decodeMatch(codeCat);
 assert.strictEqual(dec2.game.bestPlayers, 4, "Catan bestPlayers=4 embarqué");
 assert.strictEqual(typeof dec2.game.favorite, "boolean");
 
-console.log("share.test.js : OK (encode/decode, import multi-appareils, anti-doublon, rectification du jeu existant, bestPlayers, recalcul, codes invalides)");
+// --- lowestScoreWins embarqué dans le code et appliqué à l'import ---
+mem = {};
+let sG = store.defaultState();
+const pg = store.addPlayer(sG, "Paul");
+const hg = store.addPlayer(sG, "Henri");
+const golf = store.addGame(sG, { name: "Mini Golf", complexity: 1.5, lowestScoreWins: true });
+const mg = store.addMatch(sG, { gameId: golf.id, date: "2025-04-01", entries: [{ playerId: pg.id, score: 12 }, { playerId: hg.id, score: 20 }] });
+assert.strictEqual(mg.entries[0].rank, 1, "le plus petit score (12) gagne");
+const codeG = share.encodeMatch(store.load(), mg.id);
+const decG = share.decodeMatch(codeG);
+assert.strictEqual(decG.game.lowestScoreWins, true, "flag embarqué dans le code");
+mem = {};
+let sG2 = store.defaultState();
+store.addPlayer(sG2, "Paul");
+store.addPlayer(sG2, "Henri");
+const rG = share.importMatchCode(sG2, codeG, store);
+assert.strictEqual(rG.createdGame, true);
+const stG = store.load();
+assert.strictEqual(stG.games[0].lowestScoreWins, true, "flag appliqué à l'import (jeu créé)");
+assert.strictEqual(stG.matches[0].entries.find((e) => e.score === 12).rank, 1, "rang recalculé avec invert");
+assert.strictEqual(stG.matches[0].entries.find((e) => e.score === 12).points, 15, "rang 1, pas d'historique -> 10 x 1.5");
+
+// --- rectification : le code porte lowestScoreWins, le jeu local ne l'avait pas ---
+mem = {};
+let sG3 = store.defaultState();
+store.addPlayer(sG3, "Paul");
+store.addPlayer(sG3, "Henri");
+store.addGame(sG3, { name: "Mini Golf", complexity: 1.5 }); // sans le flag
+const rG2 = share.importMatchCode(sG3, codeG, store);
+assert.strictEqual(rG2.createdGame, false);
+assert.strictEqual(rG2.updatedGame, true, "infos rectifiées");
+assert.strictEqual(store.load().games[0].lowestScoreWins, true, "flag rectifié sur le jeu existant");
+
+console.log("share.test.js : OK (encode/decode, import multi-appareils, anti-doublon, rectification du jeu existant, bestPlayers, lowestScoreWins, recalcul, codes invalides)");

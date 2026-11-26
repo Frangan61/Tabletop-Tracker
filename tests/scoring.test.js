@@ -105,4 +105,52 @@ const onlyOld = (m) => m.date < "2025-01-05";
 const lbOld = scoring.leaderboard(state, onlyOld);
 assert.strictEqual(lbOld.find((r) => r.playerId === "a").points, 30, "filtre: seule l'ancienne partie compte");
 assert.strictEqual(lbOld.find((r) => r.playerId === "c").points, 0);
+// --- plus petit score gagne (invert=true, jeux type golf) ---
+assert.deepStrictEqual(scoring.computeRanks([10, 20, 5], true), [2, 3, 1], "invert : le plus petit est rang 1");
+assert.deepStrictEqual(scoring.computeRanks([7, 7, 9], true), [1, 1, 3], "invert : ex-aequo gere");
+
+// perf invert : battre l'historique = score PLUS PETIT
+assert.strictEqual(scoring.perfPoints([20, 40], 10, cfg, true), 10, "invert percentile : sous tout l'historique -> coef");
+assert.strictEqual(scoring.perfPoints([20, 40], 30, cfg, true), 5, "invert percentile : bat 50% -> coef/2");
+assert.strictEqual(scoring.perfPoints([20, 40], 50, cfg, true), 0, "invert percentile : au-dessus de tout -> 0");
+assert.ok(scoring.perfPoints(hz, 5, cfgZ, true) > 0, "invert zscore : sous la moyenne -> bonus");
+assert.strictEqual(scoring.perfPoints(hz, 50, cfgZ, true), 0, "invert zscore : au-dessus -> 0");
+
+// match complet sur un jeu lowestScoreWins
+const stateLow = {
+  scoring: cfg,
+  players: [{ id: "a" }, { id: "b" }],
+  games: [{ id: "golf", complexity: 2, lowestScoreWins: true }],
+  matches: [{ id: "m0", gameId: "golf", date: "2025-01-01", createdAt: "t0", entries: [{ playerId: "a", score: 80, points: 0 }, { playerId: "b", score: 90, points: 0 }] }],
+};
+const resLow = scoring.computeMatchResults(stateLow, {
+  gameId: "golf",
+  date: "2025-01-10",
+  entries: [{ playerId: "a", score: 75 }, { playerId: "b", score: 95 }],
+});
+// histo [80,90] : a=75 bat les 2 -> perf 10, rang 1 -> (10+10)*2 = 40 ; b=95 rang 2, perf 0 -> 7*2 = 14
+assert.strictEqual(resLow[0].rank, 1, "invert : 75 < 95 -> rang 1");
+assert.strictEqual(resLow[0].points, 40);
+assert.strictEqual(resLow[0].perf, 10);
+assert.strictEqual(resLow[0].isRecord, true, "record = score < min histo quand invert");
+assert.strictEqual(resLow[1].rank, 2);
+assert.strictEqual(resLow[1].points, 14);
+assert.strictEqual(resLow[1].isRecord, false);
+
+// --- categoryFilter accepte une chaine, "all", un tableau, ou un tableau vide ---
+const stateCats = {
+  games: [
+    { id: "gv", complexity: 1 },
+    { id: "gd", complexity: 1, duel: true },
+    { id: "gc", complexity: 1, coop: true },
+    { id: "g2", complexity: 1, coop: true, duel: true },
+  ],
+  matches: [{ gameId: "gv" }, { gameId: "gd" }, { gameId: "gc" }, { gameId: "g2" }],
+};
+assert.deepStrictEqual(stateCats.matches.filter(scoring.categoryFilter(stateCats, ["versus", "duel"])).map((m) => m.gameId), ["gv", "gd"], "tableau de 2 categories");
+assert.deepStrictEqual(stateCats.matches.filter(scoring.categoryFilter(stateCats, ["coop", "duo"])).map((m) => m.gameId), ["gc", "g2"]);
+assert.strictEqual(scoring.categoryFilter(stateCats, []), null, "tableau vide = tout");
+assert.strictEqual(scoring.categoryFilter(stateCats, "all"), null);
+assert.deepStrictEqual(stateCats.matches.filter(scoring.categoryFilter(stateCats, "coop")).map((m) => m.gameId), ["gc"], "chaine simple toujours acceptee");
+
 console.log("scoring.test.js : OK (tous les tests passent)");
