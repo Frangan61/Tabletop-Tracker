@@ -137,6 +137,8 @@
     main.appendChild(form);
 
     const panel = h("div", { class: "panel" });
+    const searchIn = h("input", { id: "gsearch", type: "text", placeholder: "🔍 Rechercher par nom ou tag dans mes jeux…", autocomplete: "off" });
+    main.appendChild(h("div", { class: "toolbar" }, searchIn));
     main.appendChild(h("h2", { text: "Mes jeux (" + s.games.length + ")" }));
     main.appendChild(h("div", { class: "btn-row", style: "margin-top:-6px" }, h("button", {
       class: "secondary",
@@ -155,10 +157,18 @@
         panel.appendChild(h("p", { class: "muted", text: "Aucun jeu enregistré." }));
         return;
       }
+      const q = (searchIn.value || "").trim().toLowerCase();
+      const games = q
+        ? st.games.filter((g) => g.name.toLowerCase().includes(q) || (g.tags || []).some((t) => t.toLowerCase().includes(q)))
+        : st.games;
+      if (!games.length) {
+        panel.appendChild(h("p", { class: "muted", text: "Aucun jeu ne correspond à « " + searchIn.value + " »." }));
+        return;
+      }
       const t = h("table", null,
         h("tr", null, h("th", { text: "Jeu" }), h("th", { text: "Tags" }), h("th", { class: "num", text: "Poids BGG" }), h("th", { class: "num", text: "Durée" }), h("th", { class: "num", text: "Joueurs" }), h("th", { class: "num", text: "Parties" }), h("th", { text: "" }))
       );
-      st.games.forEach((g) => {
+      games.forEach((g) => {
         const count = st.matches.filter((m) => m.gameId === g.id).length;
         t.appendChild(h("tr", null,
           h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: g.name }), " ", modeBadge(g), g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
@@ -181,6 +191,7 @@
       });
       panel.appendChild(t);
     }
+    searchIn.addEventListener("input", renderList);
     renderList();
   });
 })();
