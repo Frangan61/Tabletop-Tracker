@@ -115,11 +115,18 @@ nombre de joueurs, temps disponible, tags et texte libre — avec un bouton
 - **Jeux** : recherche BGG (nom, année, poids, joueurs min/max, durée, catégories/mécanismes
   en tags, image) ou saisie manuelle ; fiche par jeu avec classement dédié, **top 10 des
   meilleurs scores tous joueurs confondus** et historique des parties
-- **Classement** : coches les joueurs du tableau pour les **comparer** (barres de points,
-  tableau de stats : rang moyen, meilleur score, série en cours… et courbes d'évolution
-  des points cumulés superposées) ; filtrable par période
+- **Classement** : deux formules d'affichage au choix — **complète** (rang + perf score × poids
+  BGG) ou **podium seul** (rang × poids BGG, sans le bonus de score de partie) ; filtrable par
+  période. Coches les joueurs pour les **comparer** (barres de points, tableau de stats :
+  rang moyen, meilleur score, série en cours… courbes d'évolution superposées) ; à **2 joueurs
+  cochés**, un panneau **⚔️ face-à-face** détaille leurs duels (victoires, scores moyens, points
+  gagnés, historique des confrontations)
 - **Nouvelle partie** : sélection du jeu, date, participants + scores bruts, aperçu en direct
   du rang et des points calculés avant enregistrement
+- **🏆 Tournoi** : choisis le jeu et les participants, le nombre de poules et les qualifiés par
+  poule. Deux modes de tirage : **têtes de série selon le classement** (style FIFA — chapeaux
+  n°1 / n°2-3 / n°4-7… tirés dans des poules libres, pour que les forts ne se retrouvent
+  qu'en phase finale) ou **100 % aléatoire**. Historique des tournois enregistrés
 - **Paramètres** : formule de points, export JSON / CSV des parties, import JSON,
   **réinitialisation de toutes les parties protégée par mot de passe** (hash SHA-256 côté
   client — protège des clics accidentels, pas d'un initié qui lit le code), reset complet

@@ -9,6 +9,7 @@
       players: [],
       games: [],
       matches: [],
+      tournaments: [],
       scoring: JSON.parse(JSON.stringify((root.TTT && root.TTT.scoring && root.TTT.scoring.DEFAULT_SCORING) || {
         rankPoints: [10, 7, 5, 3, 2, 1],
         complexityMultiplier: true,
@@ -34,6 +35,7 @@
         players: Array.isArray(data.players) ? data.players : [],
         games: Array.isArray(data.games) ? data.games : [],
         matches: Array.isArray(data.matches) ? data.matches : [],
+        tournaments: Array.isArray(data.tournaments) ? data.tournaments : [],
         scoring: Object.assign(base.scoring, data.scoring || {}),
       };
     } catch (e) {
@@ -140,9 +142,29 @@
     return state;
   }
 
+  function addTournament(state, data) {
+    const t = {
+      id: uid(),
+      gameId: data.gameId,
+      seeding: !!data.seeding,
+      nPools: data.nPools,
+      qualifiedPerPool: data.qualifiedPerPool || 2,
+      pools: data.pools, // [[playerId, ...], ...]
+      createdAt: new Date().toISOString(),
+    };
+    state.tournaments.push(t);
+    save(state);
+    return t;
+  }
+
+  function deleteTournament(state, id) {
+    state.tournaments = state.tournaments.filter((t) => t.id !== id);
+    save(state);
+  }
+
   function recalculateAll(state) {
     const sorted = state.matches.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.createdAt < b.createdAt ? -1 : 1));
-    const fresh = { version: state.version, players: state.players, games: state.games, matches: [], scoring: state.scoring };
+    const fresh = { version: state.version, players: state.players, games: state.games, matches: [], tournaments: state.tournaments || [], scoring: state.scoring };
     for (const m of sorted) {
       const entries = root.TTT.scoring.computeMatchResults(fresh, { gameId: m.gameId, date: m.date, entries: m.entries });
       fresh.matches.push(Object.assign({}, m, { entries }));
@@ -167,6 +189,7 @@
       players: data.players,
       games: data.games,
       matches: data.matches,
+      tournaments: Array.isArray(data.tournaments) ? data.tournaments : [],
       scoring: Object.assign(base.scoring, data.scoring || {}),
     };
     save(state);
@@ -204,6 +227,8 @@
     addMatch,
     deleteMatch,
     resetMatches,
+    addTournament,
+    deleteTournament,
     recalculateAll,
     exportJSON,
     importJSON,

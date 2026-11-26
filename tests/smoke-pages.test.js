@@ -78,7 +78,7 @@ require("../static/js/charts.js");
 require("../static/js/bgg.js");
 require("../static/js/app.js");
 
-const PAGES = ["index", "players", "player", "games", "game", "finder", "new-match", "settings"];
+const PAGES = ["index", "players", "player", "games", "game", "finder", "tournament", "new-match", "settings"];
 
 function loadPage(page) {
   const p = path.join(__dirname, "..", "static", "js", "page-" + page + ".js");
