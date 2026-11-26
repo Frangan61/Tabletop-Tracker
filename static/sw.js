@@ -1,9 +1,11 @@
 /* TableTop Tracker — service worker PWA.
-   Stratégie : cache-first pour l'app shell (fonctionne hors-ligne),
-   réseau uniquement pour /api/* (proxy BGG ; l'UI gère déjà l'erreur offline). */
+   - Pages/JS/CSS/manifest : network-first (toujours la version la plus récente
+     quand le serveur tourne, cache en secours hors-ligne).
+   - Icônes/images : cache-first.
+   - /api/* (proxy BGG) : réseau uniquement, jamais en cache. */
 "use strict";
 
-const CACHE = "ttt-v1";
+const CACHE = "ttt-v2";
 const SHELL = [
   "./",
   "index.html",
@@ -49,23 +51,34 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+function putInCache(request, resp) {
+  if (resp && resp.ok) {
+    const copy = resp.clone();
+    caches.open(CACHE).then((c) => c.put(request, copy));
+  }
+  return resp;
+}
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
   if (url.origin !== location.origin) return;
-  if (url.pathname.startsWith("/api/")) return;
-  event.respondWith(
-    caches.match(event.request).then((hit) => {
-      if (hit) return hit;
-      return fetch(event.request)
-        .then((resp) => {
-          if (resp.ok) {
-            const copy = resp.clone();
-            caches.open(CACHE).then((c) => c.put(event.request, copy));
-          }
-          return resp;
-        })
-        .catch(() => caches.match("index.html"));
-    })
-  );
+  if (url.pathname.startsWith("/api/")) return; // BGG : réseau uniquement
+
+  const isDoc = url.pathname === "/" || /\.(html|js|css|webmanifest)$/.test(url.pathname);
+  if (isDoc) {
+    // network-first : fraîcheur garantie quand le serveur répond
+    event.respondWith(
+      fetch(event.request)
+        .then((resp) => putInCache(event.request, resp))
+        .catch(() => caches.match(event.request).then((hit) => hit || caches.match("index.html")))
+    );
+  } else {
+    // assets (icônes, images) : cache-first
+    event.respondWith(
+      caches.match(event.request).then(
+        (hit) => hit || fetch(event.request).then((resp) => putInCache(event.request, resp))
+      )
+    );
+  }
 });

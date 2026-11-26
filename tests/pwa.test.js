@@ -16,6 +16,8 @@ for (const icon of manifest.icons) {
 }
 
 const sw = fs.readFileSync(path.join(STATIC, "sw.js"), "utf8");
+assert.ok(/const CACHE = "ttt-v\d+"/.test(sw), "sw.js doit versionner son cache (ttt-vN)");
+assert.ok(sw.includes("fetch(event.request)"), "sw.js doit faire du network-first pour les pages/scripts");
 const shellMatch = sw.match(/const SHELL = \[([\s\S]*?)\];/);
 assert.ok(shellMatch, "SHELL introuvable dans sw.js");
 const shell = [...shellMatch[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);

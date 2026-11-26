@@ -45,6 +45,21 @@ Deux façons d'y accéder depuis le téléphone :
 exportez le JSON (⚙ Paramètres) sur un appareil et importez-le sur l'autre pour
 les transférer.
 
+### Mettre à jour l'app (Termux)
+
+```bash
+cd Tabletop-Tracker && git pull        # récupère la nouvelle version
+pkill -f server.py ; python3 server.py # relance le serveur
+```
+
+Puis sur le téléphone, **recharge la page 2 fois** dans Chrome
+(`http://127.0.0.1:8787`) : la 1ʳᵉ recharge télécharge le nouveau service worker,
+la 2ᵉ l'active. Le service worker est en *network-first* pour les pages/scripts :
+tant que le serveur répond, tu as la dernière version (le cache ne sert que hors-ligne).
+Si tu vois encore l'ancienne version : vide le cache du site dans Chrome
+(Paramètres → Confidentialité → Effacer les données de navigation → cache), ou
+supprime l'icône de l'écran d'accueil et réinstalle la PWA.
+
 ## Clé API BoardGameGeek (optionnel)
 
 L'API XML2 de BGG exige désormais une clé d'application. Pour l'activer :
