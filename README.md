@@ -126,7 +126,10 @@ nombre de joueurs, temps disponible, tags et texte libre — avec un bouton
 - **Jeux coopératifs** : case « 🤝 coopératif » (auto-détectée via la catégorie BGG
   « Cooperative Game »). À l'enregistrement : résultat commun **Victoire/Défaite** (+ score
   d'équipe optionnel pour le top 10) au lieu des scores individuels → victoire = 1er pour tous,
-  défaite = dernier ex-aequo, **perf désactivée** ; top 10 du jeu = meilleurs scores d'équipe
+  défaite = dernier ex-aequo, **perf désactivée** ; top 10 du jeu = meilleurs scores d'équipe.
+  Les parties coop ont leur **propre classement** (sélecteur « Catégorie » : ⚔️ Compétitif par
+  défaut / 🤝 Coopératif / 📊 Tout) et n'entrent pas dans le classement général ; la page joueur
+  affiche les deux blocs séparément (points compétitifs + bilan coop V/D)
 - **Nouvelle partie** : sélection du jeu, date, participants + scores bruts, aperçu en direct
   du rang et des points calculés avant enregistrement
 - **🏆 Tournoi** : choisis le jeu et les participants, le nombre de poules et les qualifiés par

@@ -82,4 +82,27 @@ assert.strictEqual(withExtra[0].matches, 0, "aucune partie avec les 4 joueurs");
 const f3 = stats.commonFilter(ids3);
 assert.strictEqual(st.matches.filter(f3).length, 3, "3 parties communes aux 3 (2 coop + Catan 03-01)");
 
-console.log("coop.test.js : OK (coop win/loss, perf off, comparaison parties communes)");
+// --- catégories distinctes : le classement général exclut le coop ---
+const lbVs = scoring.leaderboard(st, null, "full", "versus");
+const lbCoop = scoring.leaderboard(st, null, "full", "coop");
+const lbAll = scoring.leaderboard(st, null, "full", "all");
+const vsPaul = lbVs.find((r) => r.playerId === paul.id).points;
+const coopPaul = lbCoop.find((r) => r.playerId === paul.id).points;
+const allPaul = lbAll.find((r) => r.playerId === paul.id).points;
+// versus : Catan m1 (23) + m2 (46) + m3 (36.8) = 105.8 ; coop : 25 + 12.5 = 37.5
+assert.strictEqual(vsPaul, 105.8, "classement compétitif = uniquement les parties versus");
+assert.strictEqual(coopPaul, 37.5, "classement coop = uniquement les parties coop");
+assert.strictEqual(allPaul, 143.3, "all = la somme des deux");
+assert.strictEqual(lbVs.find((r) => r.playerId === paul.id).matches, 3, "3 parties versus");
+assert.strictEqual(lbCoop.find((r) => r.playerId === paul.id).matches, 2, "2 parties coop");
+assert.strictEqual(lbCoop.find((r) => r.playerId === paul.id).wins, 1, "1 victoire coop (mWin)");
+
+// --- playerStats : rang général en compétitif + bloc coop séparé ---
+const ps = stats.playerStats(st, paul.id);
+assert.strictEqual(ps.coop.matches, 2);
+assert.strictEqual(ps.coop.wins, 1);
+assert.strictEqual(ps.coop.losses, 1);
+assert.strictEqual(ps.totalPoints, 105.8, "points affichés = compétitif uniquement");
+assert.strictEqual(ps.globalRank, 1, "rang général calculé sur le compétitif");
+
+console.log("coop.test.js : OK (coop win/loss, perf off, parties communes, catégories versus/coop)");

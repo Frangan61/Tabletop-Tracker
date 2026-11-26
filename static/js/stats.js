@@ -66,8 +66,19 @@
       .map((g) => ({ game: g.game, count: g.count, avgRank: Math.round((g.sumRank / g.count) * 100) / 100, totalPoints: Math.round(g.sumPoints * 10) / 10 }))
       .sort((a, b) => b.count - a.count || a.avgRank - b.avgRank);
 
-    const board = root.TTT.scoring.leaderboard(state);
+    // Classement général = catégorie compétitive (les parties coop sont à part)
+    const board = root.TTT.scoring.leaderboard(state, null, "full", "versus");
     const row = board.find((r) => r.playerId === playerId);
+
+    const vsHist = history.filter((h) => !(h.game && h.game.coop));
+    const coopHist = history.filter((h) => h.game && h.game.coop);
+    const coopWins = coopHist.filter((h) => h.entry.rank === 1).length;
+    const coop = {
+      matches: coopHist.length,
+      wins: coopWins,
+      losses: coopHist.length - coopWins,
+      winRate: coopHist.length ? coopWins / coopHist.length : 0,
+    };
 
     const evolution = [];
     let cum = 0;
@@ -77,13 +88,15 @@
       evolution.push({ date: h.match.date, label: (h.game ? h.game.name : "?") + " — " + h.match.date, points: h.entry.points, total: cum });
     }
 
+    const vsPoints = vsHist.reduce((s, h) => s + h.entry.points, 0);
     return {
       player,
       matches: history.length,
       wins,
       podiums,
       winRate: history.length ? wins / history.length : 0,
-      totalPoints: Math.round(totalPoints * 10) / 10,
+      totalPoints: Math.round(vsPoints * 10) / 10,
+      coop,
       globalRank: row ? row.rank : null,
       bestScore: bestScore ? { score: bestScore.entry.score, game: bestScore.game, date: bestScore.match.date } : null,
       bestPoints: bestPoints ? { points: bestPoints.entry.points, game: bestPoints.game, date: bestPoints.match.date } : null,

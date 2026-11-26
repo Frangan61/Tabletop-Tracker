@@ -30,6 +30,12 @@
         h("option", { value: "full", text: "Complète (rang + perf score × poids BGG)" }),
         h("option", { value: "podium", text: "Podium seul (rang × poids BGG, sans bonus de score)" })
       ),
+      h("label", { for: "cat", text: "Catégorie :", style: "margin:0" }),
+      h("select", { id: "cat" },
+        h("option", { value: "versus", text: "⚔️ Compétitif (défaut — jeux avec scores)" }),
+        h("option", { value: "coop", text: "🤝 Coopératif (victoires d'équipe)" }),
+        h("option", { value: "all", text: "📊 Tout" })
+      ),
       h("button", { class: "secondary", text: "Tout cocher", onclick: () => { s.players.forEach((p) => selected.add(p.id)); renderBoard(); } }),
       h("button", { class: "secondary", text: "Tout décocher", onclick: () => { selected.clear(); renderBoard(); } }),
       h("span", { id: "sel-count", class: "muted small" })
@@ -44,7 +50,9 @@
     function currentFilter() {
       const v = toolbar.querySelector("#period").value;
       const days = parseInt(v, 10);
-      return v === "all" || isNaN(days) ? null : daysAgoFilter(days);
+      const pf = v === "all" || isNaN(days) ? null : daysAgoFilter(days);
+      const cf = TTT.scoring.categoryFilter(s, toolbar.querySelector("#cat").value);
+      return (m) => (!pf || pf(m)) && (!cf || cf(m));
     }
 
     function currentMode() {
@@ -186,6 +194,7 @@
 
     toolbar.querySelector("#period").addEventListener("change", renderBoard);
     toolbar.querySelector("#mode").addEventListener("change", renderBoard);
+    toolbar.querySelector("#cat").addEventListener("change", renderBoard);
     renderBoard();
 
     main.appendChild(h("h2", { text: "Dernières parties" }));

@@ -103,16 +103,29 @@
     return entry.points || 0;
   }
 
-  function leaderboard(state, filter, mode) {
+  // Filtre de catégorie : "versus" = jeux compétitifs seuls (défaut UI), "coop" = jeux coopératifs seuls, "all" = tout
+  function categoryFilter(state, category) {
+    if (!category || category === "all") return null;
+    return (m) => {
+      const g = state.games.find((x) => x.id === m.gameId);
+      const coop = !!(g && g.coop);
+      return category === "coop" ? coop : !coop;
+    };
+  }
+
+  function leaderboard(state, filter, mode, category) {
     mode = mode || "full";
+    category = category || "all";
     const config = state.scoring || DEFAULT_SCORING;
+    const cf = categoryFilter(state, category);
+    const f = (m) => (!filter || filter(m)) && (!cf || cf(m));
     const rows = state.players.map((p) => {
       let points = 0;
       let matches = 0;
       let wins = 0;
       let podiums = 0;
       for (const m of state.matches) {
-        if (filter && !filter(m)) continue;
+        if (!f(m)) continue;
         for (const e of m.entries) {
           if (e.playerId === p.id) {
             points += entryPoints(state, m, e, config, mode);
@@ -149,6 +162,7 @@
     historyScores,
     perfPoints,
     entryPoints,
+    categoryFilter,
     computeMatchResults,
     playerTotalPoints,
     leaderboard,
