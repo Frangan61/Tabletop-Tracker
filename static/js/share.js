@@ -36,6 +36,7 @@
             duel: !!game.duel,
             bestPlayers: game.bestPlayers || null,
             favorite: !!game.favorite,
+            lowestScoreWins: !!game.lowestScoreWins,
             tags: game.tags || [],
             image: game.image || null,
           }
@@ -85,6 +86,7 @@
         duel: !!data.game.duel,
         bestPlayers: typeof data.game.bestPlayers === "number" && data.game.bestPlayers >= 1 ? Math.round(data.game.bestPlayers) : null,
         favorite: !!data.game.favorite,
+        lowestScoreWins: !!data.game.lowestScoreWins,
         tags: Array.isArray(data.game.tags) ? data.game.tags : [],
         image: typeof data.game.image === "string" && data.game.image ? data.game.image : null,
       },
@@ -154,6 +156,7 @@
       if (data.game.tags && data.game.tags.length) fields.tags = [...(game.tags || []), ...data.game.tags];
       if (data.game.coop) fields.coop = true;
       if (data.game.duel) fields.duel = true;
+      if (data.game.lowestScoreWins) fields.lowestScoreWins = true;
       if (data.game.bestPlayers && data.game.bestPlayers !== game.bestPlayers) fields.bestPlayers = data.game.bestPlayers;
       if (data.game.favorite) fields.favorite = true;
       if (Object.keys(fields).length) {

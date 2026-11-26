@@ -15,7 +15,7 @@ function makeEl(tag) {
       return c;
     },
     removeChild(c) { this.children = this.children.filter((x) => x !== c); },
-    addEventListener() {},
+    addEventListener(t, f) { (this._l = this._l || {})[t] = f; },
   };
   Object.defineProperty(el, "textContent", { get() { return this._t || ""; }, set(v) { this._t = String(v); } });
   Object.defineProperty(el, "className", { get() { return this.attrs.class || ""; }, set(v) { this.attrs.class = v; } });
@@ -74,4 +74,22 @@ assert.strictEqual(filterItems(items, "").length, 4, "vide -> tout");
 assert.strictEqual(filterItems(items, "zzz").length, 0);
 assert.ok(typeof TTT.dom.autocomplete === "function", "autocomplete exposé");
 
-console.log("app.test.js : OK (h(), attributs, select map, filterItems/autocomplete)");
+// --- deleteMatchButton : supprime la partie après confirmation ---
+global.confirm = () => true;
+global.alert = () => {};
+const st = TTT.store.load(); // 50 jeux seedés, 0 joueur, 0 partie
+const pa = TTT.store.addPlayer(st, "A");
+const pb = TTT.store.addPlayer(st, "B");
+const g = TTT.store.addGame(st, { name: "Jeu Test", complexity: 1 });
+const m = TTT.store.addMatch(st, { gameId: g.id, date: "2025-01-01", entries: [{ playerId: pa.id, score: 5 }, { playerId: pb.id, score: 3 }] });
+assert.strictEqual(TTT.store.load().matches.length, 1);
+const delBtn = TTT.dom.deleteMatchButton(st, m.id);
+assert.strictEqual(delBtn.attrs.class, "danger");
+delBtn._l.click();
+assert.strictEqual(TTT.store.load().matches.length, 0, "partie supprimée après confirmation");
+global.confirm = () => false; // annulation -> rien supprimé
+const m2 = TTT.store.addMatch(st, { gameId: g.id, date: "2025-01-02", entries: [{ playerId: pa.id, score: 5 }, { playerId: pb.id, score: 3 }] });
+TTT.dom.deleteMatchButton(st, m2.id)._l.click();
+assert.strictEqual(TTT.store.load().matches.length, 1, "annulation = la partie reste");
+
+console.log("app.test.js : OK (h(), attributs, select map, filterItems/autocomplete, deleteMatchButton)");

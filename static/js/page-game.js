@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  const { h, fmtDate, fmt1, rankBadge, playerLink, fmtEntryResult, shareButton, autocomplete, filterItems } = TTT.dom;
+  const { h, fmtDate, fmt1, rankBadge, playerLink, fmtEntryResult, shareButton, deleteMatchButton, autocomplete, filterItems } = TTT.dom;
   const { state, boot } = TTT.util;
 
   boot("games", function (main) {
@@ -25,7 +25,7 @@
         h("h1", { style: "margin:0 0 6px", text: g.name }),
         h("div", { class: "muted" },
           h("span", { class: "weight", text: "Poids BGG : " + g.complexity + " / 5" }),
-          "  ·  " + (function () { const c = TTT.scoring.catOf(g); return c === "duel" ? "🏓 duel 1v1  ·  " : c === "coop" ? "🤝 coopératif  ·  " : c === "duo" ? "👥 duo  ·  " : "⚔️ compétitif  ·  "; })() + (g.bestPlayers ? "👍 meilleur à " + g.bestPlayers + " joueurs  ·  " : "") + (g.year ? "Année " + g.year + "  ·  " : "") + (g.duration ? "⏱ " + g.duration + " min  ·  " : "") + (g.minPlayers && g.maxPlayers ? "Joueurs " + g.minPlayers + "–" + g.maxPlayers : ""),
+          "  ·  " + (function () { const c = TTT.scoring.catOf(g); return c === "duel" ? "🏓 duel 1v1  ·  " : c === "coop" ? "🤝 coopératif  ·  " : c === "duo" ? "👥 duo  ·  " : "⚔️ compétitif  ·  "; })() + (g.bestPlayers ? "👍 meilleur à " + g.bestPlayers + " joueurs  ·  " : "") + (g.lowestScoreWins ? "🏌️ le plus petit score gagne  ·  " : "") + (g.year ? "Année " + g.year + "  ·  " : "") + (g.duration ? "⏱ " + g.duration + " min  ·  " : "") + (g.minPlayers && g.maxPlayers ? "Joueurs " + g.minPlayers + "–" + g.maxPlayers : ""),
           g.bggId ? "  ·  " + h("a", { href: "https://boardgamegeek.com/boardgame/" + g.bggId, target: "_blank", rel: "noopener", text: "Voir sur BGG ↗" }) : null
         ),
         (g.tags || []).length ? h("div", { class: "tag-cloud" }, g.tags.map((t) => h("span", { class: "chip", text: t }))) : null
@@ -95,7 +95,70 @@
       tagWrap
     ));
 
-    main.appendChild(h("h2", { text: "🏆 Top 10 des scores — tous joueurs confondus" }));
+    // --- Édition des infos du jeu (nom, poids, durée, joueurs, mode… même après création) ---
+    main.appendChild(h("h2", { text: "✏️ Modifier les infos du jeu" }));
+    const eName = h("input", { id: "e-name", type: "text", value: g.name });
+    const eBgg = h("input", { id: "e-bgg", type: "text", placeholder: "ex: 13", value: g.bggId || "" });
+    const eComplexity = h("input", { id: "e-complexity", type: "number", min: "1", max: "5", step: "0.1", value: String(g.complexity) });
+    const eYear = h("input", { id: "e-year", type: "number", min: "1900", max: "2100", placeholder: "Année", value: g.year || "" });
+    const eMin = h("input", { id: "e-min", type: "number", min: "1", max: "20", placeholder: "Min", value: g.minPlayers || "" });
+    const eMax = h("input", { id: "e-max", type: "number", min: "1", max: "20", placeholder: "Max", value: g.maxPlayers || "" });
+    const eDuration = h("input", { id: "e-duration", type: "number", min: "5", max: "600", step: "5", placeholder: "Durée moy. (min)", value: g.duration || "" });
+    const eBest = h("input", { id: "e-best", type: "number", min: "1", max: "20", placeholder: "Meilleur à (nb joueurs)", value: g.bestPlayers || "" });
+    const eImg = h("input", { id: "e-img", type: "text", placeholder: "URL de l'image (optionnel)", value: g.image || "" });
+    const eMode = h("select", { id: "e-mode" },
+      h("option", { value: "versus", text: "⚔️ Compétitif — scores individuels" }),
+      h("option", { value: "duel", text: "🏓 Duel 1v1 — strictement 2 joueurs" }),
+      h("option", { value: "coop", text: "🤝 Coopératif — victoire/défaite commune" }),
+      h("option", { value: "duo", text: "👥 Duo — coopératif, strictement 2 joueurs" })
+    );
+    eMode.value = TTT.scoring.catOf(g);
+    const eLow = h("input", { id: "e-low", type: "checkbox" });
+    eLow.checked = !!g.lowestScoreWins;
+    main.appendChild(h("div", { class: "panel" },
+      h("div", null, h("label", { for: "e-name", text: "Nom *" }), eName),
+      h("div", { class: "grid cols-4" },
+        h("div", null, h("label", { for: "e-complexity", text: "Complexité BGG (poids 1–5) *" }), eComplexity),
+        h("div", null, h("label", { for: "e-year", text: "Année" }), eYear),
+        h("div", null, h("label", { for: "e-bgg", text: "BGG id" }), eBgg),
+        h("div", null, h("label", { for: "e-img", text: "Image (URL)" }), eImg)
+      ),
+      h("div", { class: "grid cols-4" },
+        h("div", null, h("label", { for: "e-min", text: "Joueurs min" }), eMin),
+        h("div", null, h("label", { for: "e-max", text: "Joueurs max" }), eMax),
+        h("div", null, h("label", { for: "e-duration", text: "Durée moy. (min)" }), eDuration),
+        h("div", null, h("label", { for: "e-best", text: "👍 Meilleur à (nb joueurs)" }), eBest)
+      ),
+      h("div", null, h("label", { for: "e-mode", text: "Type de jeu (catégorie de classement)" }), eMode),
+      h("div", null, h("label", { style: "display:inline-flex;gap:6px;align-items:center;cursor:pointer" }, eLow, " 🏌️ Le plus petit score gagne (golf, fléchettes, etc.)")),
+      h("div", { class: "btn-row" }, h("button", {
+        text: "Enregistrer les modifications",
+        onclick: function () {
+          const name = eName.value.trim();
+          if (!name) { alert("Le nom du jeu est obligatoire."); return; }
+          const mode = eMode.value;
+          TTT.store.updateGame(state(), g.id, {
+            name: name,
+            bggId: eBgg.value.trim() || null,
+            complexity: parseFloat(eComplexity.value) || 1,
+            year: eYear.value ? parseInt(eYear.value, 10) : null,
+            minPlayers: eMin.value ? parseInt(eMin.value, 10) : null,
+            maxPlayers: eMax.value ? parseInt(eMax.value, 10) : null,
+            duration: eDuration.value ? parseInt(eDuration.value, 10) : null,
+            bestPlayers: eBest.value ? parseInt(eBest.value, 10) : null,
+            image: eImg.value.trim() || null,
+            coop: mode === "coop" || mode === "duo",
+            duel: mode === "duel" || mode === "duo",
+            lowestScoreWins: eLow.checked,
+          });
+          // poids / mode / règle « petit score » modifiés -> on recalcule toutes les parties
+          TTT.store.recalculateAll(state());
+          location.href = "game.html?id=" + encodeURIComponent(g.id) + "&msg=" + encodeURIComponent("Jeu « " + name + " » mis à jour (parties recalculées).");
+        }
+      }))
+    ));
+
+    main.appendChild(h("h2", { text: g.lowestScoreWins ? "🏆 Top 10 — le plus petit score gagne 🏌️" : "🏆 Top 10 des scores — tous joueurs confondus" }));
     const topPanel = h("div", { class: "panel" });
     main.appendChild(topPanel);
     if (g.coop) {
@@ -125,7 +188,8 @@
       for (const m of gameMatches) {
         for (const e of m.entries) all.push({ playerId: e.playerId, score: e.score, points: e.points, date: m.date });
       }
-      all.sort((a, b) => b.score - a.score || a.date.localeCompare(b.date));
+      const low = !!g.lowestScoreWins;
+      all.sort((a, b) => (low ? a.score - b.score : b.score - a.score) || a.date.localeCompare(b.date));
       if (!all.length) {
         topPanel.appendChild(h("p", { class: "muted", text: "Aucune partie sur ce jeu." }));
       } else {
@@ -155,7 +219,7 @@
       gameMatches.forEach((m) => {
         const entries = m.entries.slice().sort((a, b) => a.rank - b.rank);
         t.appendChild(h("tr", null,
-          h("td", { text: fmtDate(m.date), style: "white-space:nowrap" }, " ", shareButton(s, m.id)),
+          h("td", { text: fmtDate(m.date), style: "white-space:nowrap" }, " ", shareButton(s, m.id), " ", deleteMatchButton(s, m.id)),
           h("td", null, entries.map((e) => {
             const p = s.players.find((x) => x.id === e.playerId);
             return h("div", { class: "small" }, rankBadge(e.rank), " ", h("b", { text: p ? p.name : "?" }), h("span", { class: "muted", text: " — " + fmtEntryResult(m, e) + " · " + fmt1(e.points) + " pts" + (e.isRecord ? " ★" : "") }));

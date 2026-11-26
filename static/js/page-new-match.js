@@ -121,6 +121,9 @@
       const coop = isCoop();
       scoreBox.style.display = coop ? "none" : "";
       coopBox.style.display = coop ? "" : "none";
+      const low = !!(curGame() && curGame().lowestScoreWins);
+      scoreLabel.textContent = low ? "Score brut 🏌️ (le plus petit gagne)" : "Score brut";
+      scoreIn.placeholder = low ? "Plus petit = mieux" : "Score";
       renderPreview();
     }
 

@@ -1,6 +1,6 @@
 (function () {
   "use strict";
-  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerLink, playerDot, gameLink, fmtEntryResult, shareButton } = TTT.dom;
+  const { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerLink, playerDot, gameLink, fmtEntryResult, shareButton, deleteMatchButton } = TTT.dom;
   const { state, daysAgoFilter, boot } = TTT.util;
 
   boot("index", function (main) {
@@ -17,6 +17,12 @@
 
     const selected = new Set();
 
+    const catDefs = [
+      { v: "versus", label: "⚔️ Compétitif", checked: true },
+      { v: "duel", label: "🏓 Duel" },
+      { v: "coop", label: "🤝 Coop" },
+      { v: "duo", label: "👥 Duo" },
+    ];
     const toolbar = h("div", { class: "toolbar" },
       h("label", { for: "period", text: "Période :", style: "margin:0" }),
       h("select", { id: "period" },
@@ -30,14 +36,17 @@
         h("option", { value: "full", text: "Complète (rang + perf score × poids BGG)" }),
         h("option", { value: "podium", text: "Podium seul (rang × poids BGG, sans bonus de score)" })
       ),
-      h("label", { for: "cat", text: "Catégorie :", style: "margin:0" }),
-      h("select", { id: "cat" },
-        h("option", { value: "versus", text: "⚔️ Compétitif (défaut — 3+ joueurs)" }),
-        h("option", { value: "duel", text: "🏓 Duel 1v1 (strictement 2 joueurs)" }),
-        h("option", { value: "coop", text: "🤝 Coopératif (3+ joueurs)" }),
-        h("option", { value: "duo", text: "👥 Duo (coop à 2 joueurs)" }),
-        h("option", { value: "all", text: "📊 Tout" })
+      h("label", { text: "Catégories :", style: "margin:0" }),
+      h("span", { id: "cats", style: "display:inline-flex;gap:10px;flex-wrap:wrap;align-items:center" },
+        catDefs.map((c) => {
+          const cb = h("input", { type: "checkbox", value: c.v });
+          cb.checked = !!c.checked;
+          cb.addEventListener("change", renderBoard);
+          c.cb = cb;
+          return h("label", { style: "margin:0;display:inline-flex;gap:4px;align-items:center;cursor:pointer" }, cb, " " + c.label);
+        })
       ),
+      h("span", { class: "muted small", text: "(aucune cochée = tout)" }),
       h("button", { class: "secondary", text: "Tout cocher", onclick: () => { s.players.forEach((p) => selected.add(p.id)); renderBoard(); } }),
       h("button", { class: "secondary", text: "Tout décocher", onclick: () => { selected.clear(); renderBoard(); } }),
       h("span", { id: "sel-count", class: "muted small" })
@@ -53,7 +62,8 @@
       const v = toolbar.querySelector("#period").value;
       const days = parseInt(v, 10);
       const pf = v === "all" || isNaN(days) ? null : daysAgoFilter(days);
-      const cf = TTT.scoring.categoryFilter(s, toolbar.querySelector("#cat").value);
+      const cats = catDefs.filter((c) => c.cb.checked).map((c) => c.v);
+      const cf = TTT.scoring.categoryFilter(s, cats.length ? cats : "all");
       return (m) => (!pf || pf(m)) && (!cf || cf(m));
     }
 
@@ -196,7 +206,6 @@
 
     toolbar.querySelector("#period").addEventListener("change", renderBoard);
     toolbar.querySelector("#mode").addEventListener("change", renderBoard);
-    toolbar.querySelector("#cat").addEventListener("change", renderBoard);
     renderBoard();
 
     main.appendChild(h("h2", { text: "Dernières parties" }));
@@ -208,7 +217,7 @@
       recent.forEach((m) => {
         const entries = m.entries.slice().sort((a, b) => a.rank - b.rank);
         const card = h("div", { class: "panel match-card" },
-          h("div", { class: "head" }, h("span", { class: "title" }, gameLink(s, m.gameId)), h("span", null, h("span", { class: "muted small", text: fmtDate(m.date) }), " ", shareButton(s, m.id))),
+          h("div", { class: "head" }, h("span", { class: "title" }, gameLink(s, m.gameId)), h("span", null, h("span", { class: "muted small", text: fmtDate(m.date) }), " ", shareButton(s, m.id), " ", deleteMatchButton(s, m.id))),
           h("ul", null, entries.map((e) => {
             return h("li", null,
               h("span", null, rankBadge(e.rank), " ", playerLink(s, e.playerId)),

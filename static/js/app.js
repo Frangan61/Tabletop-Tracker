@@ -152,6 +152,19 @@
     });
   }
 
+  function deleteMatchButton(state, matchId, after) {
+    return h("button", {
+      class: "danger", text: "🗑️", title: "Supprimer cette partie (ex : scores saisis par erreur)",
+      onclick: function () {
+        if (!confirm("Supprimer définitivement cette partie ?")) return;
+        try {
+          TTT.store.deleteMatch(state, matchId);
+          if (typeof after === "function") after(); else location.reload();
+        } catch (e) { alert(e.message); }
+      }
+    });
+  }
+
   function normText(s) {
     return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
   }
@@ -246,6 +259,6 @@
   }
 
   root.TTT = root.TTT || {};
-  root.TTT.dom = { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerDot, playerLink, gameLink, download, fmtEntryResult, shareDialog, shareButton, autocomplete, filterItems, normText };
+  root.TTT.dom = { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerDot, playerLink, gameLink, download, fmtEntryResult, shareDialog, shareButton, deleteMatchButton, autocomplete, filterItems, normText };
   root.TTT.util = { daysAgoFilter, initNav, state, boot, sha256Hex, debounce };
 })(typeof window !== "undefined" ? window : globalThis);
