@@ -102,6 +102,11 @@
     return root.TTT.store.load();
   }
 
+  async function sha256Hex(text) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
   function boot(page, render) {
     const rootEl = document.getElementById("root");
     const nav = h("nav", { class: "topnav" },
@@ -127,5 +132,5 @@
 
   root.TTT = root.TTT || {};
   root.TTT.dom = { h, clear, fmtDate, fmt1, fmtPct, rankBadge, playerDot, playerLink, gameLink, download };
-  root.TTT.util = { daysAgoFilter, initNav, state, boot };
+  root.TTT.util = { daysAgoFilter, initNav, state, boot, sha256Hex };
 })(typeof window !== "undefined" ? window : globalThis);

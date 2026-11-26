@@ -112,11 +112,17 @@ nombre de joueurs, temps disponible, tags et texte libre — avec un bouton
   records (meilleur score, meilleure partie en points, séries de victoires),
   statistiques sur les 5/10 dernières parties (points moyens, rang moyen, % victoires),
   jeux favoris, graphique d'évolution des points cumulés
-- **Jeux** : recherche BGG (nom, année, poids, joueurs min/max, image) ou saisie manuelle,
-  fiche par jeu avec classement dédié et historique des parties
+- **Jeux** : recherche BGG (nom, année, poids, joueurs min/max, durée, catégories/mécanismes
+  en tags, image) ou saisie manuelle ; fiche par jeu avec classement dédié, **top 10 des
+  meilleurs scores tous joueurs confondus** et historique des parties
+- **Classement** : coches les joueurs du tableau pour les **comparer** (barres de points,
+  tableau de stats : rang moyen, meilleur score, série en cours… et courbes d'évolution
+  des points cumulés superposées) ; filtrable par période
 - **Nouvelle partie** : sélection du jeu, date, participants + scores bruts, aperçu en direct
   du rang et des points calculés avant enregistrement
-- **Paramètres** : formule de points, export JSON / CSV des parties, import JSON, reset
+- **Paramètres** : formule de points, export JSON / CSV des parties, import JSON,
+  **réinitialisation de toutes les parties protégée par mot de passe** (hash SHA-256 côté
+  client — protège des clics accidentels, pas d'un initié qui lit le code), reset complet
 
 ## Structure
 

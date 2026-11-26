@@ -97,7 +97,38 @@
     };
   }
 
-  const api = { matchesOf, playerStats };
+  // Comparaison de plusieurs joueurs (avec filtre de période optionnel)
+  function comparePlayers(state, playerIds, filter) {
+    return playerIds.map((id) => {
+      const player = state.players.find((p) => p.id === id);
+      const hist = matchesOf(state, id).filter((h) => !filter || filter(h.match));
+      const board = root.TTT.scoring.leaderboard(state, filter).find((r) => r.playerId === id);
+      const wins = hist.filter((h) => h.entry.rank === 1).length;
+      const podiums = hist.filter((h) => h.entry.rank <= 3).length;
+      const avgRank = hist.length ? Math.round((hist.reduce((s, h) => s + h.entry.rank, 0) / hist.length) * 100) / 100 : null;
+      const best = hist.length ? Math.max.apply(null, hist.map((h) => h.entry.score)) : null;
+      const streak = streaks(hist);
+      let cum = 0;
+      const evolution = hist.slice().reverse().map((h) => {
+        cum = Math.round((cum + h.entry.points) * 10) / 10;
+        return { date: h.match.date, y: cum };
+      });
+      return {
+        player,
+        points: board ? board.points : 0,
+        matches: hist.length,
+        wins,
+        podiums,
+        winRate: hist.length ? wins / hist.length : 0,
+        avgRank,
+        bestScore: best,
+        currentStreak: streak.current,
+        evolution,
+      };
+    });
+  }
+
+  const api = { matchesOf, playerStats, comparePlayers };
   root.TTT = root.TTT || {};
   root.TTT.stats = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;

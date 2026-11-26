@@ -50,6 +50,32 @@
       boardPanel.appendChild(t);
     }
 
+    main.appendChild(h("h2", { text: "🏆 Top 10 des scores — tous joueurs confondus" }));
+    const topPanel = h("div", { class: "panel" });
+    main.appendChild(topPanel);
+    const all = [];
+    for (const m of gameMatches) {
+      for (const e of m.entries) all.push({ playerId: e.playerId, score: e.score, points: e.points, date: m.date });
+    }
+    all.sort((a, b) => b.score - a.score || a.date.localeCompare(b.date));
+    if (!all.length) {
+      topPanel.appendChild(h("p", { class: "muted", text: "Aucune partie sur ce jeu." }));
+    } else {
+      const tt = h("table", null,
+        h("tr", null, h("th", { text: "#" }), h("th", { text: "Joueur" }), h("th", { class: "num", text: "Score" }), h("th", { text: "Date" }), h("th", { class: "num", text: "Points" }))
+      );
+      all.slice(0, 10).forEach((e, i) => {
+        tt.appendChild(h("tr", null,
+          h("td", null, i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : String(i + 1)),
+          h("td", null, playerLink(s, e.playerId)),
+          h("td", { class: "num", text: String(e.score) }),
+          h("td", { text: fmtDate(e.date) }),
+          h("td", { class: "num", text: fmt1(e.points) })
+        ));
+      });
+      topPanel.appendChild(tt);
+    }
+
     main.appendChild(h("h2", { text: "Historique des parties (" + gameMatches.length + ")" }));
     if (!gameMatches.length) {
       main.appendChild(h("p", { class: "muted", text: "—" }));

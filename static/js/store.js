@@ -133,6 +133,13 @@
     save(state);
   }
 
+  // Supprime TOUTES les parties (scores globaux) ; joueurs et jeux conservés.
+  function resetMatches(state) {
+    state.matches = [];
+    save(state);
+    return state;
+  }
+
   function recalculateAll(state) {
     const sorted = state.matches.slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.createdAt < b.createdAt ? -1 : 1));
     const fresh = { version: state.version, players: state.players, games: state.games, matches: [], scoring: state.scoring };
@@ -196,6 +203,7 @@
     deleteGame,
     addMatch,
     deleteMatch,
+    resetMatches,
     recalculateAll,
     exportJSON,
     importJSON,

@@ -22,7 +22,14 @@ function makeEl(tag) {
     click() {},
     querySelector() { return makeEl("div"); },
     querySelectorAll() { return []; },
-    getContext() { return new Proxy({}, { get: (t, k) => (k in t ? t[k] : () => {}) }); },
+    getContext() {
+      return new Proxy({}, {
+        get: (t, k) => {
+          if (k === "measureText") return () => ({ width: 20 });
+          return k in t ? t[k] : () => {};
+        },
+      });
+    },
     scrollIntoView() {},
     focus() {},
     clientWidth: 600,

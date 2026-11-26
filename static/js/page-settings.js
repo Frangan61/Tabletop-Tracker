@@ -92,5 +92,27 @@
         })
       )
     ));
+
+    // Reset des scores globaux (toutes les parties), protégé par mot de passe (hash SHA-256 côté client)
+    const RESET_PASSWORD_SHA256 = "47640e5f52b61369ed665d52e51fcd0d0577385d0d531b8eb91018ecb947df5d";
+    main.appendChild(h("div", { class: "panel", style: "border-color: var(--danger)" },
+      h("h2", { style: "margin-top:0", text: "Zone de danger" }),
+      h("p", { class: "muted small", text: "Supprime TOUTES les parties enregistrées (classements, tops de scores, historiques). Les joueurs et les jeux sont conservés. Action protégée par mot de passe." }),
+      h("div", { class: "btn-row" },
+        h("button", {
+          class: "danger", text: "🗑 Réinitialiser tous les scores (parties)",
+          onclick: async function () {
+            const st = state();
+            const pw = prompt("Mot de passe requis pour supprimer les " + st.matches.length + " partie(s) :");
+            if (pw === null) return;
+            const hash = await TTT.util.sha256Hex(pw);
+            if (hash !== RESET_PASSWORD_SHA256) { alert("Mot de passe incorrect."); return; }
+            if (!confirm("Supprimer définitivement les " + st.matches.length + " partie(s) ? Joueurs et jeux conservés.")) return;
+            TTT.store.resetMatches(st);
+            location.href = "index.html?msg=" + encodeURIComponent("Toutes les parties ont été supprimées.");
+          }
+        })
+      )
+    ));
   });
 })();
