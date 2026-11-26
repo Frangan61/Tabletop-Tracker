@@ -158,6 +158,17 @@
   }
 
   function boot(page, render) {
+    // Bannière visible si une erreur JS plante une page (utile sur mobile)
+    window.addEventListener("error", (e) => {
+      try {
+        const b = h("div", {
+          style: "position:fixed;top:0;left:0;right:0;background:#7a1020;color:#ffd7dc;padding:8px 12px;font:12px monospace;z-index:999;white-space:pre-wrap",
+          text: "Erreur JS : " + (e.message || e.type) + " @ " + (e.filename || "").split("/").pop() + ":" + (e.lineno || "?"),
+        });
+        document.body.appendChild(b);
+      } catch (_) {}
+    });
+
     const rootEl = document.getElementById("root");
     const nav = h("nav", { class: "topnav" },
       h("a", { class: "brand", href: "index.html", text: "🎲 TableTop Tracker" }),

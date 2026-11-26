@@ -5,7 +5,7 @@
    - /api/* (proxy BGG) : réseau uniquement, jamais en cache. */
 "use strict";
 
-const CACHE = "ttt-v8";
+const CACHE = "ttt-v9";
 const SHELL = [
   "./",
   "index.html",
