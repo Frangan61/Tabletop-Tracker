@@ -60,6 +60,8 @@
     const fYear = h("input", { id: "gyear", type: "number", min: "1900", max: "2100", placeholder: "Année" });
     const fMin = h("input", { id: "gmin", type: "number", min: "1", max: "20", placeholder: "Min" });
     const fMax = h("input", { id: "gmax", type: "number", min: "1", max: "20", placeholder: "Max" });
+    const fDuration = h("input", { id: "gduration", type: "number", min: "5", max: "600", step: "5", placeholder: "Durée moy. (min)" });
+    const fTags = h("input", { id: "gtags", type: "text", placeholder: "Tags séparés par des virgules (ex: Stratégie, Cartes, Ambiance)" });
 
     function fillForm(t) {
       fName.value = t.name || "";
@@ -68,16 +70,25 @@
       fYear.value = t.year || "";
       fMin.value = t.minPlayers || "";
       fMax.value = t.maxPlayers || "";
+      fDuration.value = t.playingtime || "";
+      const tags = [...(t.categories || []), ...(t.mechanics || [])];
+      fTags.value = tags.slice(0, 12).join(", ");
+      if (t.image) fImg.value = t.image;
     }
 
+    const fImg = h("input", { id: "gimg", type: "hidden" });
     const form = h("div", { class: "panel" },
       h("h2", { style: "margin-top:0", text: "Ajouter un jeu (manuel ou pré-rempli via BGG)" }),
-      h("div", null, h("label", { for: "gname", text: "Nom *" }), fName, fBgg),
+      h("div", null, h("label", { for: "gname", text: "Nom *" }), fName, fBgg, fImg),
       h("div", { class: "grid cols-4" },
         h("div", null, h("label", { for: "gcomplexity", text: "Complexité BGG (poids 1–5) *" }), fComplexity),
         h("div", null, h("label", { for: "gyear", text: "Année" }), fYear),
         h("div", null, h("label", { for: "gmin", text: "Joueurs min" }), fMin),
         h("div", null, h("label", { for: "gmax", text: "Joueurs max" }), fMax)
+      ),
+      h("div", { class: "grid cols-2" },
+        h("div", null, h("label", { for: "gduration", text: "Durée moyenne (minutes)" }), fDuration),
+        h("div", null, h("label", { for: "gtags", text: "Tags / catégories (séparés par des virgules)" }), fTags)
       ),
       h("div", { class: "btn-row" }, h("button", {
         text: "Ajouter le jeu",
@@ -91,6 +102,9 @@
             year: fYear.value ? parseInt(fYear.value, 10) : null,
             minPlayers: fMin.value ? parseInt(fMin.value, 10) : null,
             maxPlayers: fMax.value ? parseInt(fMax.value, 10) : null,
+            duration: fDuration.value ? parseInt(fDuration.value, 10) : null,
+            tags: fTags.value,
+            image: fImg.value || null,
           });
           location.href = "games.html?msg=" + encodeURIComponent("Jeu « " + fName.value.trim() + " » ajouté.");
         }
@@ -110,14 +124,15 @@
         return;
       }
       const t = h("table", null,
-        h("tr", null, h("th", { text: "Jeu" }), h("th", { class: "num", text: "Poids BGG" }), h("th", { class: "num", text: "Année" }), h("th", { class: "num", text: "Joueurs" }), h("th", { class: "num", text: "Parties" }), h("th", { text: "" }))
+        h("tr", null, h("th", { text: "Jeu" }), h("th", { text: "Tags" }), h("th", { class: "num", text: "Poids BGG" }), h("th", { class: "num", text: "Durée" }), h("th", { class: "num", text: "Joueurs" }), h("th", { class: "num", text: "Parties" }), h("th", { text: "" }))
       );
       st.games.forEach((g) => {
         const count = st.matches.filter((m) => m.gameId === g.id).length;
         t.appendChild(h("tr", null,
           h("td", null, h("a", { href: "game.html?id=" + encodeURIComponent(g.id), text: g.name }), g.bggId ? h("span", { class: "muted small", text: "  · BGG #" + g.bggId }) : null),
+          h("td", null, (g.tags || []).map((tg) => h("span", { class: "chip", text: tg }))),
           h("td", { class: "num" }, h("span", { class: "weight", text: String(g.complexity) })),
-          h("td", { class: "num", text: g.year ? String(g.year) : "—" }),
+          h("td", { class: "num", text: g.duration ? g.duration + " min" : "—" }),
           h("td", { class: "num", text: g.minPlayers && g.maxPlayers ? g.minPlayers + "–" + g.maxPlayers : "—" }),
           h("td", { class: "num", text: String(count) }),
           h("td", null, h("button", {

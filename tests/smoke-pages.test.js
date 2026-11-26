@@ -71,7 +71,7 @@ require("../static/js/charts.js");
 require("../static/js/bgg.js");
 require("../static/js/app.js");
 
-const PAGES = ["index", "players", "player", "games", "game", "new-match", "settings"];
+const PAGES = ["index", "players", "player", "games", "game", "finder", "new-match", "settings"];
 
 function loadPage(page) {
   const p = path.join(__dirname, "..", "static", "js", "page-" + page + ".js");
@@ -91,8 +91,8 @@ let s = store.defaultState();
 const alice = store.addPlayer(s, "Alice");
 const bob = store.addPlayer(s, "Bob");
 const chloe = store.addPlayer(s, "Chloe");
-const catan = store.addGame(s, { name: "Catan", bggId: "13", complexity: 2.3, year: 1995, minPlayers: 3, maxPlayers: 4 });
-const wingspan = store.addGame(s, { name: "Wingspan", bggId: "266192", complexity: 2.4, year: 2019 });
+const catan = store.addGame(s, { name: "Catan", bggId: "13", complexity: 2.3, year: 1995, minPlayers: 3, maxPlayers: 4, duration: 60, tags: "Stratégie, Commerce, Négociation" });
+const wingspan = store.addGame(s, { name: "Wingspan", bggId: "266192", complexity: 2.4, year: 2019, minPlayers: 1, maxPlayers: 5, duration: 50, tags: ["Animaux", "Moteur de combos", "Cartes"] });
 store.addMatch(s, { gameId: catan.id, date: "2025-01-05", entries: [{ playerId: alice.id, score: 10 }, { playerId: bob.id, score: 8 }, { playerId: chloe.id, score: 6 }] });
 store.addMatch(s, { gameId: catan.id, date: "2025-01-12", entries: [{ playerId: bob.id, score: 12 }, { playerId: alice.id, score: 9 }, { playerId: chloe.id, score: 9 }] });
 store.addMatch(s, { gameId: wingspan.id, date: "2025-01-20", entries: [{ playerId: chloe.id, score: 87 }, { playerId: alice.id, score: 80 }, { playerId: bob.id, score: 75 }] });

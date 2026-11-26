@@ -17,9 +17,10 @@
         h("h1", { style: "margin:0 0 6px", text: g.name }),
         h("div", { class: "muted" },
           h("span", { class: "weight", text: "Poids BGG : " + g.complexity + " / 5" }),
-          "  ·  " + (g.year ? "Année " + g.year + "  ·  " : "") + (g.minPlayers && g.maxPlayers ? "Joueurs " + g.minPlayers + "–" + g.maxPlayers : ""),
+          "  ·  " + (g.year ? "Année " + g.year + "  ·  " : "") + (g.duration ? "⏱ " + g.duration + " min  ·  " : "") + (g.minPlayers && g.maxPlayers ? "Joueurs " + g.minPlayers + "–" + g.maxPlayers : ""),
           g.bggId ? "  ·  " + h("a", { href: "https://boardgamegeek.com/boardgame/" + g.bggId, target: "_blank", rel: "noopener", text: "Voir sur BGG ↗" }) : null
-        )
+        ),
+        (g.tags || []).length ? h("div", { class: "tag-cloud" }, g.tags.map((t) => h("span", { class: "chip", text: t }))) : null
       )
     ];
     if (g.image) headChildren.unshift(h("img", { src: g.image, alt: g.name }));

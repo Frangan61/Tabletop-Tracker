@@ -10,15 +10,21 @@
     const rp = h("input", { id: "s-rankpoints", type: "text", value: s.scoring.rankPoints.join(",") });
     const cm = h("input", { id: "s-cm", type: "checkbox" });
     cm.checked = !!s.scoring.complexityMultiplier;
-    const rb = h("input", { id: "s-rb", type: "number", step: "0.5", min: "0", value: String(s.scoring.recordBonus) });
+    const pm = h("select", { id: "s-pm" },
+      h("option", { value: "percentile", text: "Percentile (recommandé) — % des scores historiques battus" }),
+      h("option", { value: "zscore", text: "Z-score — écart à la moyenne en écarts-types (clampé à 3)" })
+    );
+    pm.value = s.scoring.perfMode === "zscore" ? "zscore" : "percentile";
+    const pc = h("input", { id: "s-pc", type: "number", step: "0.5", min: "0", value: String(s.scoring.perfCoef != null ? s.scoring.perfCoef : 10) });
 
     main.appendChild(h("div", { class: "panel" },
-      h("h2", { style: "margin-top:0", text: "Formule de points" }),
-      h("p", { class: "muted small", html: "Pour chaque partie : <b>points = points de rang × poids BGG du jeu</b> (si activé) <b>+ bonus record × poids BGG</b> si le score du joueur bat son meilleur score précédent sur ce même jeu. Les ex-aequo partagent le même rang." }),
+      h("h2", { style: "margin-top:0", text: "Formule de points (dynamique)" }),
+      h("p", { class: "muted small", html: "Pour chaque partie : <b>points = (points de rang + perf) × poids BGG du jeu</b> (si le multiplicateur est activé).<br>La <b>perf</b> compare le score brut du joueur à <b>tous les scores des parties précédentes de ce même jeu</b> : plus il est haut dans l'historique, plus elle est élevée (0 si le jeu n'a pas encore d'historique). Les ex-aequo partagent le même rang." }),
       h("div", null, h("label", { for: "s-rankpoints", text: "Points par rang (1er, 2e, 3e, … séparés par des virgules)" }), rp),
-      h("div", { class: "grid cols-2" },
+      h("div", { class: "grid cols-3", style: "grid-template-columns: 1fr 2fr 1fr" },
         h("div", null, h("label", { for: "s-cm", text: "Multiplier par le poids BGG (complexité)" }), cm),
-        h("div", null, h("label", { for: "s-rb", text: "Bonus record perso sur le jeu (× poids BGG)" }), rb)
+        h("div", null, h("label", { for: "s-pm", text: "Mode de calcul de la perf" }), pm),
+        h("div", null, h("label", { for: "s-pc", text: "Coefficient perf (points max)" }), pc)
       ),
       h("div", { class: "btn-row" },
         h("button", {
@@ -29,9 +35,10 @@
             if (!arr.length) { alert("Indique au moins une valeur de points de rang."); return; }
             st.scoring.rankPoints = arr;
             st.scoring.complexityMultiplier = cm.checked;
-            st.scoring.recordBonus = parseFloat(rb.value) || 0;
+            st.scoring.perfMode = pm.value;
+            st.scoring.perfCoef = parseFloat(pc.value) || 0;
             TTT.store.save(st);
-            alert("Formule enregistrée. Les points des parties existantes ne changent pas automatiquement.");
+            alert("Formule enregistrée. Les points des parties existantes ne changent pas automatiquement — utilise « Recalculer » juste en dessous.");
           }
         }),
         h("button", {

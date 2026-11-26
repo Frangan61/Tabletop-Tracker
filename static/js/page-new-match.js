@@ -18,8 +18,10 @@
 
     const gameSel = h("select", { id: "m-game" },
       h("option", { value: "", text: "— Choisir un jeu —" }),
-      s.games.map((g) => h("option", { value: g.id, text: g.name + " (poids " + g.complexity + ")" }))
+      s.games.map((g) => h("option", { value: g.id, text: g.name + " (poids " + g.complexity + (g.duration ? ", " + g.duration + " min" : "") + ")" }))
     );
+    const preselect = new URLSearchParams(location.search).get("game");
+    if (preselect && s.games.some((g) => g.id === preselect)) gameSel.value = preselect;
     const dateIn = h("input", { id: "m-date", type: "date", value: new Date().toISOString().slice(0, 10) });
     const notesIn = h("input", { id: "m-notes", type: "text", placeholder: "Notes éventuelles (facultatif)" });
 
@@ -69,7 +71,7 @@
           const row = previewBody.children[i];
           row.children[2].textContent = "";
           row.children[2].appendChild(rankBadge(r.rank));
-          row.children[3].textContent = fmt1(r.points) + " pts" + (r.isRecord ? " ★ record !" : "");
+          row.children[3].textContent = fmt1(r.points) + " pts" + (r.perf > 0 ? " (perf +" + fmt1(r.perf) + ")" : "") + (r.isRecord ? " ★ record !" : "");
           row.children[3].className = "num" + (r.isRecord ? " badge-record" : "");
         });
       }

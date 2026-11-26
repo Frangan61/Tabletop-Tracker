@@ -70,6 +70,20 @@
     save(state);
   }
 
+  function normalizeTags(tags) {
+    const seen = new Set();
+    const out = [];
+    for (const t of Array.isArray(tags) ? tags : String(tags || "").split(",")) {
+      const clean = String(t).trim().replace(/\s+/g, " ");
+      const key = clean.toLowerCase();
+      if (clean && !seen.has(key) && out.length < 15) {
+        seen.add(key);
+        out.push(clean);
+      }
+    }
+    return out;
+  }
+
   function addGame(state, data) {
     const g = {
       id: uid(),
@@ -79,6 +93,8 @@
       year: data.year || null,
       minPlayers: data.minPlayers || null,
       maxPlayers: data.maxPlayers || null,
+      duration: typeof data.duration === "number" && data.duration > 0 ? Math.round(data.duration) : null,
+      tags: normalizeTags(data.tags || []),
       image: data.image || null,
       createdAt: new Date().toISOString(),
     };
@@ -176,6 +192,7 @@
     addPlayer,
     deletePlayer,
     addGame,
+    normalizeTags,
     deleteGame,
     addMatch,
     deleteMatch,

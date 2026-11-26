@@ -86,6 +86,9 @@ def parse_thing(xml_text):
                 weight = round(float(w.get("value")), 2)
             except ValueError:
                 weight = None
+    def values(path):
+        return [el.get("value") for el in item.findall(path) if el.get("value")]
+
     return {
         "id": item.get("id"),
         "name": primary.get("value") if primary is not None else "Sans nom",
@@ -93,6 +96,11 @@ def parse_thing(xml_text):
         "complexity": weight,
         "minPlayers": text_of(item, "./minplayers"),
         "maxPlayers": text_of(item, "./maxplayers"),
+        "playingtime": text_of(item, "./playingtime"),
+        "minplaytime": text_of(item, "./minplaytime"),
+        "maxplaytime": text_of(item, "./maxplaytime"),
+        "categories": values("./boardgamecategory"),
+        "mechanics": values("./boardgamemechanic"),
         "image": text_of(item, "./image"),
         "thumbnail": text_of(item, "./thumbnail"),
     }

@@ -4,7 +4,8 @@
   const DEFAULT_SCORING = {
     rankPoints: [10, 7, 5, 3, 2, 1],
     complexityMultiplier: true,
-    recordBonus: 5,
+    perfMode: "percentile", // "percentile" | "zscore"
+    perfCoef: 10, // points de perf max (percentile=1 ou z clampe a 3 selon le mode)
   };
 
   function round1(n) {
@@ -26,16 +27,31 @@
     return config.complexityMultiplier ? w : 1;
   }
 
-  function bestScoreBefore(state, playerId, gameId, beforeDate) {
-    let best = null;
+  // Tous les scores bruts des parties PRECEDENTES de ce jeu (tous joueurs confondus)
+  function historyScores(state, gameId, beforeDate) {
+    const out = [];
     for (const m of state.matches) {
       if (m.gameId !== gameId) continue;
       if (beforeDate && m.date >= beforeDate) continue;
-      for (const e of m.entries) {
-        if (e.playerId === playerId && (best === null || e.score > best)) best = e.score;
-      }
+      for (const e of m.entries) out.push(e.score);
     }
-    return best;
+    return out;
+  }
+
+  // Bonus dynamique : position du score dans l'historique du jeu.
+  function perfPoints(history, score, config) {
+    if (!history.length) return 0;
+    const mode = config.perfMode === "zscore" ? "zscore" : "percentile";
+    const coef = typeof config.perfCoef === "number" && config.perfCoef >= 0 ? config.perfCoef : DEFAULT_SCORING.perfCoef;
+    if (mode === "zscore") {
+      const mu = history.reduce((a, b) => a + b, 0) / history.length;
+      const sigma = Math.sqrt(history.reduce((a, b) => a + (b - mu) * (b - mu), 0) / history.length);
+      if (sigma < 1e-9) return score > mu ? coef : 0;
+      const z = (score - mu) / sigma;
+      return coef * Math.min(Math.max(z, 0), 3) / 3;
+    }
+    const below = history.filter((s) => s < score).length;
+    return coef * (below / history.length);
   }
 
   function computeMatchResults(state, input) {
@@ -44,19 +60,19 @@
     const weight = weightFor(game, config);
     const scores = input.entries.map((e) => e.score);
     const ranks = computeRanks(scores);
+    const history = historyScores(state, input.gameId, input.date);
+    const maxHist = history.length ? Math.max.apply(null, history) : null;
     return input.entries.map((e, i) => {
       const base = rankPointsFor(ranks[i], config);
-      const rankPoints = round1(base * weight);
-      const prevBest = bestScoreBefore(state, e.playerId, input.gameId, input.date);
-      const isRecord = prevBest !== null && e.score > prevBest;
-      const bonus = isRecord ? round1((config.recordBonus || 0) * weight) : 0;
+      const perf = perfPoints(history, e.score, config);
+      const isRecord = maxHist !== null && e.score > maxHist;
       return {
         playerId: e.playerId,
         score: e.score,
         rank: ranks[i],
-        points: round1(rankPoints + bonus),
-        rankPoints,
-        bonus,
+        rankPoints: base,
+        perf: round1(perf),
+        points: round1((base + perf) * weight),
         isRecord,
       };
     });
@@ -114,7 +130,8 @@
     computeRanks,
     rankPointsFor,
     weightFor,
-    bestScoreBefore,
+    historyScores,
+    perfPoints,
     computeMatchResults,
     playerTotalPoints,
     leaderboard,

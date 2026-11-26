@@ -109,6 +109,7 @@
       h("a", { href: "index.html", "data-nav": "index", text: "Classement" }),
       h("a", { href: "players.html", "data-nav": "players", text: "Joueurs" }),
       h("a", { href: "games.html", "data-nav": "games", text: "Jeux" }),
+      h("a", { href: "finder.html", "data-nav": "finder", text: "🎯 Trouver un jeu" }),
       h("a", { href: "new-match.html", class: "cta", "data-nav": "new", text: "+ Nouvelle partie" }),
       h("a", { href: "settings.html", "data-nav": "settings", text: "⚙ Paramètres" })
     );

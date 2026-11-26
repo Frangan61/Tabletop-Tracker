@@ -59,23 +59,36 @@ BGG_API_KEY=votre_cle python3 server.py
 Sans clé, la page **Jeux** vous propose automatiquement la saisie manuelle
 (nom + poids BGG entre 1 et 5).
 
-## Formule de points (configurable dans ⚙ Paramètres)
+## Formule de points dynamique (configurable dans ⚙ Paramètres)
 
 Pour chaque partie enregistrée :
 
 ```
-points du joueur = points_de_rang(rang) × poids_BGG(jeu)     (si multiplicateur activé)
-                 + bonus_record × poids_BGG(jeu)              (si record perso sur ce jeu)
+points du joueur = (points_de_rang(rang) + perf) × poids_BGG(jeu)   (si multiplicateur activé)
 ```
 
 - **Points de rang** par défaut : 1er = 10, 2e = 7, 3e = 5, 4e = 3, 5e = 2, 6e et + = 1
 - **Poids BGG** : complexité du jeu entre 1 (léger) et 5 (expert), récupérée via BGG ou saisie à la main
-- **Bonus record** : +5 × poids BGG quand le score brut du joueur bat son meilleur
-  score précédent **sur ce même jeu** (une première partie sur un jeu ne donne pas de bonus)
+- **perf (dynamique)** : compare le score brut du joueur à **tous les scores des parties
+  précédentes du même jeu** — plus il est haut dans cet historique, plus la perf est élevée :
+  - mode **percentile** (recommandé) : `perf = coef × (% de scores historiques battus)`
+  - mode **zscore** : `perf = coef × clamp((score − moyenne) / écart-type, 0, 3) / 3`
+  - `perf = 0` si le jeu n'a pas encore d'historique ; `coef` réglable (défaut 10)
 - **Ex-aequo** : les scores égaux partagent le même rang (rangs 1, 1, 3, 4…)
+
+Exemple : victoire (10 pts) avec un score qui bat 90 % de l'historique du jeu, poids 2.3
+→ (10 + 9) × 2.3 ≈ 43,7 pts, contre (10 + 2) × 2.3 ≈ 27,6 pts pour un score médian.
 
 Les points calculés sont **stockés avec la partie** à l'enregistrement ; changez la
 formule dans les paramètres puis cliquez sur « Recalculer toutes les parties » si besoin.
+
+## Tags & recherche de jeu
+
+Chaque jeu peut avoir des **tags** (catégories BGG + mécanismes récupérés
+automatiquement, ou saisis à la main), une **durée moyenne** et un **nombre de
+joueurs min/max**. La page **🎯 Trouver un jeu** filtre la ludothèque selon :
+nombre de joueurs, temps disponible, tags et texte libre — avec un bouton
+« ▶ Jouer à celui-là » qui pré-remplit la nouvelle partie.
 
 ## Fonctionnalités
 
