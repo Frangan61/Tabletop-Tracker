@@ -94,4 +94,41 @@ assert.throws(() => share.decodeMatch("hello"), /TTT1/);
 assert.throws(() => share.decodeMatch("TTT1:!!!notbase64!!!"), /illisible|invalide/i);
 assert.throws(() => share.decodeMatch("TTT1:" + share.b64urlEncode(JSON.stringify({ v: 1 }))), /invalide/i);
 
-console.log("share.test.js : OK (encode/decode, import multi-appareils, anti-doublon, recalcul, codes invalides)");
+// --- Henri a déjà le jeu mais avec des infos erronées/incomplètes ("Katan", poids 1) ---
+assert.strictEqual(share.namesSimilar("Catan", "Katan"), true, "noms similaires detectes");
+assert.strictEqual(share.namesSimilar("Catan", "Wingspan"), false);
+// Paul : Catan complet (bggId, poids 2.3, tags, duree, image)
+mem = {};
+sA = store.defaultState();
+const pA = store.addPlayer(sA, "Paul");
+const hA = store.addPlayer(sA, "Henri");
+const catA = store.addGame(sA, { name: "Catan", bggId: "13", complexity: 2.3, year: 1995, minPlayers: 3, maxPlayers: 4, duration: 60, tags: ["Commerce", "Négociation"], image: "https://cf.geekdo-images.com/img.png" });
+const mCat = store.addMatch(sA, { gameId: catA.id, date: "2025-03-01", entries: [{ playerId: pA.id, score: 10 }, { playerId: hA.id, score: 8 }] });
+const codeCat = share.encodeMatch(store.load(), mCat.id);
+const decCat = share.decodeMatch(codeCat);
+assert.strictEqual(decCat.game.image, "https://cf.geekdo-images.com/img.png", "l'image est embarquée dans le code");
+
+// Henri : jeu "Katan" existant, poids erroné (1), pas de bggId/tags/durée
+mem = {};
+let sH2 = store.defaultState();
+store.addPlayer(sH2, "Henri");
+store.addPlayer(sH2, "Paul");
+const katanLocal = store.addGame(sH2, { name: "Katan", complexity: 1, minPlayers: 2, maxPlayers: 4 });
+const rCat = share.importMatchCode(sH2, codeCat, store);
+const stH2 = store.load();
+assert.strictEqual(rCat.createdGame, false, "pas de doublon de jeu créé");
+assert.strictEqual(rCat.updatedGame, true, "infos rectifiées");
+assert.strictEqual(stH2.games.length, 1, "toujours 1 seul jeu");
+const gFixed = stH2.games[0];
+assert.strictEqual(gFixed.name, "Katan", "nom local conservé");
+assert.strictEqual(gFixed.bggId, "13", "bggId ajouté");
+assert.strictEqual(gFixed.complexity, 2.3, "poids erroné rectifié (1 -> 2.3)");
+assert.strictEqual(gFixed.duration, 60, "durée ajoutée");
+assert.strictEqual(gFixed.year, 1995);
+assert.deepStrictEqual(gFixed.tags, ["Commerce", "Négociation"], "tags ajoutés");
+assert.strictEqual(gFixed.image, "https://cf.geekdo-images.com/img.png", "image ajoutée");
+assert.strictEqual(stH2.matches.length, 1, "partie importée");
+// les points de la partie importée utilisent le poids rectifié : Paul rang 1 -> 10 x 2.3 = 23
+assert.strictEqual(stH2.matches[0].entries.find((e) => e.score === 10).points, 23, "points recalcules avec le poids rectifie");
+
+console.log("share.test.js : OK (encode/decode, import multi-appareils, anti-doublon, rectification du jeu existant, recalcul, codes invalides)");

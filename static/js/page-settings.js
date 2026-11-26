@@ -109,7 +109,8 @@
               return;
             }
             const parts = ["Partie importée ✅"];
-            if (r.createdGame) parts.push("jeu « " + r.game.name + " » créé");
+            if (r.createdGame) parts.push("jeu « " + r.game.name + " » ajouté à ta bibliothèque (avec toutes ses infos)");
+            if (r.updatedGame) parts.push("infos du jeu « " + r.game.name + " » rectifiées (poids/tags/durée/BGG…)");
             if (r.createdPlayers.length) parts.push("joueur(s) créé(s) : " + r.createdPlayers.join(", "));
             location.href = "index.html?msg=" + encodeURIComponent(parts.join(" · "));
           } catch (e) {

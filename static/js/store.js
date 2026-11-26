@@ -107,6 +107,15 @@
     return g;
   }
 
+  function updateGame(state, id, fields) {
+    const g = state.games.find((x) => x.id === id);
+    if (!g) throw new Error("Jeu introuvable.");
+    if (fields.tags) fields.tags = normalizeTags(fields.tags);
+    Object.assign(g, fields);
+    save(state);
+    return g;
+  }
+
   function deleteGame(state, id) {
     const used = state.matches.some((m) => m.gameId === id);
     if (used) throw new Error("Ce jeu a des parties enregistrées : suppression impossible.");
@@ -227,6 +236,7 @@
     deletePlayer,
     addGame,
     normalizeTags,
+    updateGame,
     deleteGame,
     addMatch,
     deleteMatch,

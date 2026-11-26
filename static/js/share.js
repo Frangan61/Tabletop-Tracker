@@ -35,6 +35,7 @@
             coop: !!game.coop,
             duel: !!game.duel,
             tags: game.tags || [],
+            image: game.image || null,
           }
         : null,
       date: m.date,
@@ -81,6 +82,7 @@
         coop: !!data.game.coop,
         duel: !!data.game.duel,
         tags: Array.isArray(data.game.tags) ? data.game.tags : [],
+        image: typeof data.game.image === "string" && data.game.image ? data.game.image : null,
       },
       date: data.date,
       notes: typeof data.notes === "string" ? data.notes : "",
@@ -90,7 +92,36 @@
     };
   }
 
+  function normalizeName(s) {
+    return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    if (!m) return n;
+    if (!n) return m;
+    let prev = Array.from({ length: n + 1 }, (_, i) => i);
+    for (let i = 1; i <= m; i++) {
+      const cur = [i];
+      for (let j = 1; j <= n; j++) {
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      }
+      prev = cur;
+    }
+    return prev[n];
+  }
+
+  // "Catan" vs "Katan" -> true (évite les doublons de jeux à l'import)
+  function namesSimilar(a, b) {
+    const x = normalizeName(a), y = normalizeName(b);
+    if (!x || !y) return false;
+    if (x === y) return true;
+    if (x.includes(y) || y.includes(x)) return true;
+    return Math.abs(x.length - y.length) <= 1 && levenshtein(x, y) <= 1;
+  }
+
   // Importe un code dans le state courant : crée le jeu/les joueurs manquants,
+  // RECTIFIE les infos du jeu existant si elles sont erronées/incomplètes,
   // détecte les doublons, recalcule rangs et points avec l'historique local.
   function importMatchCode(state, code, store) {
     const data = decodeMatch(code);
@@ -98,10 +129,29 @@
     let game = null;
     if (data.game.bggId) game = state.games.find((g) => g.bggId === data.game.bggId);
     if (!game) game = state.games.find((g) => g.name.toLowerCase() === data.game.name.toLowerCase());
+    if (!game) game = state.games.find((g) => namesSimilar(g.name, data.game.name));
     let createdGame = false;
+    let updatedGame = false;
     if (!game) {
       game = store.addGame(state, data.game);
       createdGame = true;
+    } else {
+      // Jeu déjà connu : on rectifie les champs erronés/incomplets avec ceux du code
+      const fields = {};
+      if (!game.bggId && data.game.bggId) fields.bggId = data.game.bggId;
+      if (data.game.complexity > 0) fields.complexity = data.game.complexity;
+      if (data.game.year && !game.year) fields.year = data.game.year;
+      if (data.game.minPlayers && !game.minPlayers) fields.minPlayers = data.game.minPlayers;
+      if (data.game.maxPlayers && !game.maxPlayers) fields.maxPlayers = data.game.maxPlayers;
+      if (data.game.duration && !game.duration) fields.duration = data.game.duration;
+      if (data.game.image && !game.image) fields.image = data.game.image;
+      if (data.game.tags && data.game.tags.length) fields.tags = [...(game.tags || []), ...data.game.tags];
+      if (data.game.coop) fields.coop = true;
+      if (data.game.duel) fields.duel = true;
+      if (Object.keys(fields).length) {
+        store.updateGame(state, game.id, fields);
+        updatedGame = true;
+      }
     }
 
     const createdPlayers = [];
@@ -131,10 +181,10 @@
       coopResult: data.coopResult,
       teamScore: data.teamScore,
     });
-    return { duplicate: false, match, createdGame, createdPlayers, game };
+    return { duplicate: false, match, createdGame, updatedGame, createdPlayers, game };
   }
 
-  const api = { PREFIX, encodeMatch, decodeMatch, importMatchCode, b64urlEncode, b64urlDecode };
+  const api = { PREFIX, encodeMatch, decodeMatch, importMatchCode, namesSimilar, b64urlEncode, b64urlDecode };
   root.TTT = root.TTT || {};
   root.TTT.share = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
