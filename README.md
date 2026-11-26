@@ -115,9 +115,13 @@ nombre de joueurs, temps disponible, tags et texte libre — avec un bouton
 - **Jeux** : recherche BGG (nom, année, poids, joueurs min/max, durée, catégories/mécanismes
   en tags, image) ou saisie manuelle ; fiche par jeu avec classement dédié, **top 10 des
   meilleurs scores tous joueurs confondus** et historique des parties
-- **Classement** : deux formules d'affichage au choix — **complète** (rang + perf score × poids
-  BGG) ou **podium seul** (rang × poids BGG, sans le bonus de score de partie) ; filtrable par
-  période. Coches les joueurs pour les **comparer** : la comparaison ne porte que sur les
+- **Classement** : **4 catégories distinctes** via le sélecteur « Catégorie » — ⚔️ Compétitif
+  (défaut, 3+ joueurs) / 🏓 **Duel 1v1** (jeux strictement à 2) / 🤝 Coopératif / 👥 **Duo**
+  (coop à 2) / 📊 Tout. Chaque jeu a un **mode** (versus/duel/coop/duo), auto-détecté à l'ajout
+  (min=max=2 → duel/duo, catégorie BGG « Cooperative » → coop/duo) ; les parties duel/duo sont
+  limitées à exactement 2 participants. Deux formules d'affichage au choix — **complète** (rang +
+  perf score × poids BGG) ou **podium seul** (rang × poids BGG, sans le bonus de score de partie) ;
+  filtrable par période. Coches les joueurs pour les **comparer** : la comparaison ne porte que sur les
   **parties communes à tous les joueurs cochés** (équitable — les parties avec d'autres joueurs
   en plus comptent tant que tous les cochés y sont) ; barres de points, tableau de stats
   (rang moyen, meilleur score, série en cours…), courbes d'évolution superposées ; à **2 joueurs
@@ -127,9 +131,8 @@ nombre de joueurs, temps disponible, tags et texte libre — avec un bouton
   « Cooperative Game »). À l'enregistrement : résultat commun **Victoire/Défaite** (+ score
   d'équipe optionnel pour le top 10) au lieu des scores individuels → victoire = 1er pour tous,
   défaite = dernier ex-aequo, **perf désactivée** ; top 10 du jeu = meilleurs scores d'équipe.
-  Les parties coop ont leur **propre classement** (sélecteur « Catégorie » : ⚔️ Compétitif par
-  défaut / 🤝 Coopératif / 📊 Tout) et n'entrent pas dans le classement général ; la page joueur
-  affiche les deux blocs séparément (points compétitifs + bilan coop V/D)
+  Les parties coop/duo ont leur **propre classement** et n'entrent pas dans le classement
+  compétitif ; la page joueur affiche des blocs séparés (points compétitifs, 🤝 coop V/D, 🏓 à 2 joueurs)
 - **Nouvelle partie** : sélection du jeu, date, participants + scores bruts, aperçu en direct
   du rang et des points calculés avant enregistrement
 - **🏆 Tournoi** : choisis le jeu et les participants, le nombre de poules et les qualifiés par
