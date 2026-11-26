@@ -118,6 +118,9 @@
     rootEl.appendChild(flash);
     rootEl.appendChild(main);
     initNav(page);
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    }
     render(main);
   }
 

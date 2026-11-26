@@ -23,6 +23,28 @@ Le port se change avec la variable d'environnement `PORT`.
 (fonctionne en `file://`, mais la recherche BGG est alors indisponible →
 saisie manuelle des jeux).
 
+## Sur smartphone (PWA)
+
+L'app est une **PWA installable** (manifest + service worker) : une fois ouverte
+depuis le téléphone, « Ajouter à l'écran d'accueil » crée une vraie icône plein écran,
+et l'app fonctionne **hors-ligne** (seule la recherche BGG nécessite le réseau).
+
+Deux façons d'y accéder depuis le téléphone :
+
+1. **Même Wi-Fi** : lancer le serveur en écoutant sur le réseau local
+   ```bash
+   HOST=0.0.0.0 python3 server.py
+   ```
+   puis ouvrir `http://<IP-du-PC>:8787` sur le téléphone (IP du PC : `ipconfig` sur
+   Windows, `ip addr` / `hostname -I` sur Mac/Linux). Le défaut reste `127.0.0.1`.
+   ⚠️ pas d'authentification : à n'utiliser que sur un Wi-Fi de confiance.
+2. **Tunnel USB (plus sûr)** : téléphone en USB + débogage USB, puis
+   `adb reverse tcp:8787 tcp:8787` et ouvrir `http://127.0.0.1:8787` sur le téléphone.
+
+⚠️ Les données (`localStorage`) sont **propres à chaque navigateur/appareil** :
+exportez le JSON (⚙ Paramètres) sur un appareil et importez-le sur l'autre pour
+les transférer.
+
 ## Clé API BoardGameGeek (optionnel)
 
 L'API XML2 de BGG exige désormais une clé d'application. Pour l'activer :

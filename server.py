@@ -19,7 +19,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
-HOST = "127.0.0.1"
+HOST = os.environ.get("HOST", "127.0.0.1")  # mettre 0.0.0.0 pour servir sur le réseau local (Wi-Fi)
 PORT = int(os.environ.get("PORT", "8787"))
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 BGG_API = "https://boardgamegeek.com/xmlapi2"
